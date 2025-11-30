@@ -1,11 +1,26 @@
 import React, { useState } from 'react';
-import { 
-  LayoutDashboard, ClipboardList, Users, Package, FileText, 
-  CheckCircle, Search, Bell, ShieldCheck, Hammer, Truck, FileCheck, BarChart3, 
-  Plus, ArrowLeft, LogOut
+import {
+  LayoutDashboard,
+  ClipboardList,
+  Users,
+  Package,
+  FileText,
+  CheckCircle,
+  Search,
+  Bell,
+  ShieldCheck,
+  Hammer,
+  Truck,
+  FileCheck,
+  BarChart3,
+  Plus,
+  ArrowLeft,
+  LogOut
 } from 'lucide-react';
 
-// --- CONFIGURATION & DUMMY DATA ---
+/* ------------------------------------------------------------------
+   ROLES & SAMPLE USERS
+-------------------------------------------------------------------*/
 
 const ROLES = {
   ADMIN: 'Super Admin',
@@ -21,39 +36,224 @@ const SAMPLE_CREDENTIALS = [
   { role: ROLES.MANUFACTURER, name: 'Beta Elevators (Mfr B)', email: 'beta@test.com', pass: '123', id: 'mfr-b' },
   { role: ROLES.MANUFACTURER, name: 'Gamma Corp (Mfr C)', email: 'gamma@test.com', pass: '123', id: 'mfr-c' },
   { role: ROLES.MANUFACTURER, name: 'Delta Lifts (Mfr D)', email: 'delta@test.com', pass: '123', id: 'mfr-d' },
-  { role: ROLES.MAINTENANCE, name: 'Service Pro', email: 'service@test.com', pass: '123' },
+  { role: ROLES.MAINTENANCE, name: 'Service Pro', email: 'service@test.com', pass: '123' }
 ];
+
+/* ------------------------------------------------------------------
+   10-STAGE BACKBONE + META
+-------------------------------------------------------------------*/
 
 const CORE_STAGES = [
-  { id: 1, title: 'Need Discovery', icon: <Search size={16} /> },
-  { id: 2, title: 'Measurements', icon: <ClipboardList size={16} /> },
-  { id: 3, title: 'Feasibility', icon: <FileCheck size={16} /> },
-  { id: 4, title: 'Bidding', icon: <Users size={16} /> },
-  { id: 5, title: 'Selection', icon: <BarChart3 size={16} /> },
-  { id: 6, title: 'Contract', icon: <FileText size={16} /> },
-  { id: 7, title: 'Design (GAD)', icon: <CheckCircle size={16} /> },
-  { id: 8, title: 'Production', icon: <Hammer size={16} /> },
-  { id: 9, title: 'Installation', icon: <Truck size={16} /> },
-  { id: 10, title: 'Handover', icon: <ShieldCheck size={16} /> },
+  {
+    id: 1,
+    key: 'onboarding',
+    title: 'Stage 1 — Customer / Builder Onboarding & Need Discovery',
+    shortLabel: 'Signed Up',
+    platformLabel: 'Signed Up ✔',
+    icon: <Search size={16} />
+  },
+  {
+    id: 2,
+    key: 'requirements',
+    title: 'Stage 2 — Smart Requirement Form + Measurement Capture',
+    shortLabel: 'Requirements Submitted',
+    platformLabel: 'Requirements Submitted',
+    icon: <ClipboardList size={16} />
+  },
+  {
+    id: 3,
+    key: 'feasibility',
+    title: 'Stage 3 — Verified Survey & Feasibility Report',
+    shortLabel: 'Survey & Feasibility',
+    platformLabel: 'Survey Completed • Feasibility Passed',
+    icon: <FileCheck size={16} />
+  },
+  {
+    id: 4,
+    key: 'broadcast',
+    title: 'Stage 4 — Lead Broadcast to Verified Manufacturer Pool',
+    shortLabel: 'Lead Broadcast',
+    platformLabel: 'Lead Broadcast to Manufacturers',
+    icon: <Users size={16} />
+  },
+  {
+    id: 5,
+    key: 'ranking',
+    title: 'Stage 5 — AI Ranking & Top 3 Quote Presentation',
+    shortLabel: 'Top 3 Quotes',
+    platformLabel: 'Top 3 Quotes Ready',
+    icon: <BarChart3 size={16} />
+  },
+  {
+    id: 6,
+    key: 'contract',
+    title: 'Stage 6 — Customer Selection & Tri-Party Contract',
+    shortLabel: 'Contract Signed',
+    platformLabel: 'Contract Signed',
+    icon: <FileText size={16} />
+  },
+  {
+    id: 7,
+    key: 'gad',
+    title: 'Stage 7 — Final Technical Freeze (GAD Approval)',
+    shortLabel: 'GAD Approved',
+    platformLabel: 'GAD Approved',
+    icon: <CheckCircle size={16} />
+  },
+  {
+    id: 8,
+    key: 'production',
+    title: 'Stage 8 — Production & Pre-Installation Readiness',
+    shortLabel: 'Production',
+    platformLabel: 'Production Started',
+    icon: <Hammer size={16} />
+  },
+  {
+    id: 9,
+    key: 'installation',
+    title: 'Stage 9 — Delivery, Installation & Commissioning',
+    shortLabel: 'Installation',
+    platformLabel: 'Installation / Commissioning',
+    icon: <Truck size={16} />
+  },
+  {
+    id: 10,
+    key: 'handover',
+    title: 'Stage 10 — Handover + Digital Logbook + Lifetime Support',
+    shortLabel: 'Handover & AMC',
+    platformLabel: 'Handover Complete • AMC Active',
+    icon: <ShieldCheck size={16} />
+  }
 ];
 
-// Seed Products for Dummy Manufacturers
+const STAGE_META = {
+  1: {
+    objective: 'Get the customer / builder onboarded and clarify what kind of project this is.',
+    keyPoints: [
+      'Guided product selector: home, stilt + 4, apartment, commercial.',
+      'Capture preferences for brands, cabin styles, door types and price bands.',
+      'Rule-based prompts to check 3-phase power feasibility.',
+      'Pre-warning about regulatory / licensing requirements.'
+    ],
+    whatsNext: 'Move to Stage 2 to capture measurements or upload drawings.'
+  },
+  2: {
+    objective: 'Capture all technical requirements and any existing data the customer has.',
+    keyPoints: [
+      'Customer enters shaft measurements OR uploads floor plans.',
+      'Upload photos, videos, voice notes for context.',
+      'Placeholder for AI: auto-extract shaft dimensions from drawings.',
+      'If measurements are missing, customer can request a GPS-verified site survey.'
+    ],
+    whatsNext: 'Lift4M or partner conducts survey and prepares feasibility (Stage 3).'
+  },
+  3: {
+    objective: 'Convert raw measurements into a trusted feasibility report for all parties.',
+    keyPoints: [
+      'Technician captures shaft / pit / headroom, power and structural constraints.',
+      'Checks electrical readiness and power backup feasibility.',
+      'Assigns risk grading (Green / Amber / Red).',
+      'Photos, measurements and timestamps appear in the customer dashboard.'
+    ],
+    whatsNext: 'Once feasibility is Green/Amber, broadcast the opportunity to manufacturers (Stage 4).'
+  },
+  4: {
+    objective: 'Share a verified, standardized opportunity with the right manufacturer pool.',
+    keyPoints: [
+      'Broadcast only to verified, onboarded manufacturers.',
+      'Manufacturers see standardized technical sheet and constraints.',
+      'Proposals must comply with IS 17900-1 & 17900-2 and transparent cost breakup.',
+      'Warranty expectations and lead time window are clearly defined.'
+    ],
+    whatsNext: 'Manufacturers submit proposals; AI prepares Top 3 options (Stage 5).'
+  },
+  5: {
+    objective: 'Help the customer decide quickly without being overwhelmed.',
+    keyPoints: [
+      'Algorithm ranks proposals on reliability, lead time, warranty & total cost of ownership.',
+      'AMC charges and emergency response SLAs get extra weight.',
+      'Customer sees only the Top 3 in a clean comparison table.',
+      'Hidden-cost checks flag surprises.'
+    ],
+    whatsNext: 'Customer selects one proposal, triggering tri-party contract drafting (Stage 6).'
+  },
+  6: {
+    objective: 'Convert the chosen proposal into a trusted, tri-party agreement.',
+    keyPoints: [
+      'Contract between Customer, Lift4M marketplace and Manufacturer.',
+      'Covers deadlines, safety standards, warranty and AMC obligations.',
+      'Escrow-linked payment milestones build trust.',
+      'Digital acceptance / e-sign placeholders for future integration.'
+    ],
+    whatsNext: 'After contract + escrow, GAD design freeze begins (Stage 7).'
+  },
+  7: {
+    objective: 'Lock down the final technical solution and get everyone’s sign-off.',
+    keyPoints: [
+      'Manufacturer uploads GAD drawings.',
+      'Approvals tracked across Customer, Architect, Builder and MEP engineer.',
+      'Lift license documentation (Form A/C/F) can be assisted and tracked.',
+      'Automated reminders nudge stakeholders when approvals are pending.'
+    ],
+    whatsNext: 'When GAD is approved and first payment is cleared, production starts (Stage 8).'
+  },
+  8: {
+    objective: 'Ensure production and site are both ready before material moves.',
+    keyPoints: [
+      'Track production ETA, serial numbers and material readiness.',
+      'Factory QC status logged before dispatch.',
+      'Joint Readiness Certificate (JRC) confirms civil & electrical readiness.',
+      'Surface risks around site readiness early.'
+    ],
+    whatsNext: 'Material dispatch and installation milestones start (Stage 9).'
+  },
+  9: {
+    objective: 'Track every sub-step of installation and commissioning.',
+    keyPoints: [
+      'Milestones: dispatch, delivery, rails, machine, doors, cabin, wiring, testing.',
+      'Every sub-stage has photos, timestamps and QC checklists.',
+      'Lift4M approval is required before moving to the next gate.',
+      'Commissioning includes load test, safety circuits and ARD test.'
+    ],
+    whatsNext: 'After commissioning, move to handover & lifetime support (Stage 10).'
+  },
+  10: {
+    objective: 'Complete the project and set up long-term service & AMC visibility.',
+    keyPoints: [
+      'Operating license assistance and documentation stored in digital logbook.',
+      'Warranty activation and AMC plan details are visible to the customer.',
+      'Emergency support channels and SLA timers for breakdowns.',
+      'Lift card shows status, AMC schedule and next visit.'
+    ],
+    whatsNext: 'Ongoing lifecycle: service tickets, AMC renewals and SLA tracking.'
+  }
+};
+
+/* ------------------------------------------------------------------
+   PRODUCTS (SEED INVENTORY)
+-------------------------------------------------------------------*/
+
 const INITIAL_PRODUCTS = [
   { id: 'p1', mfrId: 'mfr-a', name: 'Alpha Glide 3000', type: 'Passenger', capacity: '6 Persons', price: 1200000 },
   { id: 'p2', mfrId: 'mfr-b', name: 'Beta Max Load', type: 'Freight', capacity: '2000 kg', price: 1800000 },
   { id: 'p3', mfrId: 'mfr-c', name: 'Gamma Eco Home', type: 'Home Lift', capacity: '4 Persons', price: 950000 },
-  { id: 'p4', mfrId: 'mfr-d', name: 'Delta High Speed', type: 'Passenger', capacity: '10 Persons', price: 2200000 },
+  { id: 'p4', mfrId: 'mfr-d', name: 'Delta High Speed', type: 'Passenger', capacity: '10 Persons', price: 2200000 }
 ];
 
-// Helper for Currency
+/* ------------------------------------------------------------------
+   HELPERS
+-------------------------------------------------------------------*/
+
 const formatINR = (val) =>
   new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 0
   }).format(val);
 
-// --- SHARED UI COMPONENTS ---
+/* ------------------------------------------------------------------
+   REUSABLE UI PIECES
+-------------------------------------------------------------------*/
 
 const StatusBadge = ({ status }) => {
   const styles = {
@@ -66,6 +266,7 @@ const StatusBadge = ({ status }) => {
     Accepted: 'bg-green-100 text-green-800',
     Rejected: 'bg-red-50 text-red-400',
     Submitted: 'bg-blue-50 text-blue-600',
+    Contract: 'bg-slate-800 text-white'
   };
   return (
     <span
@@ -79,11 +280,11 @@ const StatusBadge = ({ status }) => {
 };
 
 const Timeline = ({ activeStage }) => (
-  <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm overflow-x-auto mb-6">
+  <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm overflow-x-auto mb-4">
     <h3 className="font-bold text-sm text-slate-500 uppercase mb-6 tracking-wider">
       Live Project Status
     </h3>
-    <div className="flex items-center min-w-[800px]">
+    <div className="flex items-center min-w-[880px]">
       {CORE_STAGES.map((stage, idx) => {
         const isActive = stage.id === activeStage;
         const isCompleted = stage.id < activeStage;
@@ -102,7 +303,7 @@ const Timeline = ({ activeStage }) => (
                 {isCompleted ? <CheckCircle size={14} /> : stage.id}
               </div>
               <span
-                className={`text-[10px] mt-2 font-medium text-center absolute top-8 w-24 ${
+                className={`text-[10px] mt-2 font-medium text-center absolute top-8 w-28 ${
                   isActive
                     ? 'text-emerald-700 font-bold'
                     : isCompleted
@@ -110,7 +311,7 @@ const Timeline = ({ activeStage }) => (
                     : 'text-slate-400'
                 }`}
               >
-                {stage.title}
+                {stage.shortLabel}
               </span>
             </div>
             {idx !== CORE_STAGES.length - 1 && (
@@ -127,54 +328,77 @@ const Timeline = ({ activeStage }) => (
   </div>
 );
 
-// --- AUTH PAGE ---
+const StageInfoPanel = ({ stageNumber }) => {
+  const meta = STAGE_META[stageNumber];
+  const core = CORE_STAGES.find((s) => s.id === stageNumber);
+  if (!meta || !core) return null;
 
-const LoginPage = ({ onLogin }) => {
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl overflow-hidden max-w-5xl w-full flex flex-col md:flex-row min-h-[600px]">
-        <div className="md:w-1/2 bg-slate-900 text-white p-12 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-8">
-              <div className="bg-emerald-500 p-2 rounded">
-                <Package size={28} />
-              </div>
-              <span className="text-3xl font-bold tracking-tight">Lift4M</span>
-            </div>
-            <h1 className="text-4xl font-bold leading-tight mb-4">
-              Marketplace &amp; Project Mgmt
-            </h1>
-            <p className="text-slate-400">
-              Platform for Builders, Manufacturers &amp; Service Teams.
-            </p>
-          </div>
-        </div>
-        <div className="md:w-1/2 p-8 md:p-12 overflow-y-auto">
-          <h2 className="text-xl font-bold mb-6">Select a Role to Simulate</h2>
-          <div className="space-y-3">
-            {SAMPLE_CREDENTIALS.map((cred, idx) => (
-              <button
-                key={idx}
-                onClick={() => onLogin(cred)}
-                className="w-full flex items-center justify-between p-4 border rounded-lg hover:bg-slate-50 transition group"
-              >
-                <div className="text-left">
-                  <p className="font-bold text-slate-800">{cred.name}</p>
-                  <p className="text-xs text-slate-500">{cred.role}</p>
-                </div>
-                <div className="text-emerald-600 opacity-0 group-hover:opacity-100 font-bold text-sm">
-                  Login &rarr;
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+    <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-5 mb-4">
+      <h3 className="text-sm font-bold text-slate-900 mb-1">{core.title}</h3>
+      <p className="text-xs text-slate-500 mb-3">{meta.objective}</p>
+      <ul className="list-disc pl-4 space-y-1 text-xs text-slate-600">
+        {meta.keyPoints.map((p, i) => (
+          <li key={i}>{p}</li>
+        ))}
+      </ul>
+      <p className="text-[11px] text-slate-500 mt-3">
+        <span className="font-semibold">What’s next:</span> {meta.whatsNext}
+      </p>
     </div>
   );
 };
 
-// --- SUPER ADMIN DASHBOARD ---
+/* ------------------------------------------------------------------
+   LOGIN / AUTH
+-------------------------------------------------------------------*/
+
+const LoginPage = ({ onLogin }) => (
+  <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
+    <div className="bg-white rounded-2xl shadow-2xl overflow-hidden max-w-5xl w-full flex flex-col md:flex-row min-h-[600px]">
+      <div className="md:w-1/2 bg-slate-900 text-white p-12 flex flex-col justify-between">
+        <div>
+          <div className="flex items-center gap-2 mb-8">
+            <div className="bg-emerald-500 p-2 rounded">
+              <Package size={28} />
+            </div>
+            <span className="text-3xl font-bold tracking-tight">Lift4M</span>
+          </div>
+          <h1 className="text-4xl font-bold leading-tight mb-4">
+            Marketplace &amp; Project Mgmt
+          </h1>
+          <p className="text-slate-400">
+            Platform for Builders, Manufacturers &amp; Service Teams.
+          </p>
+        </div>
+      </div>
+      <div className="md:w-1/2 p-8 md:p-12 overflow-y-auto">
+        <h2 className="text-xl font-bold mb-6">Select a Role to Simulate</h2>
+        <div className="space-y-3">
+          {SAMPLE_CREDENTIALS.map((cred, idx) => (
+            <button
+              key={idx}
+              onClick={() => onLogin(cred)}
+              className="w-full flex items-center justify-between p-4 border rounded-lg hover:bg-slate-50 transition group"
+            >
+              <div className="text-left">
+                <p className="font-bold text-slate-800">{cred.name}</p>
+                <p className="text-xs text-slate-500">{cred.role}</p>
+              </div>
+              <div className="text-emerald-600 opacity-0 group-hover:opacity-100 font-bold text-sm">
+                Login &rarr;
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+/* ------------------------------------------------------------------
+   SUPER ADMIN DASHBOARD
+-------------------------------------------------------------------*/
 
 const SuperAdminDashboard = ({ projects, quotes }) => {
   const [activeTab, setActiveTab] = useState('Overview');
@@ -193,15 +417,13 @@ const SuperAdminDashboard = ({ projects, quotes }) => {
       (p.auditLogs || []).map((log) => ({
         ...log,
         projectName: p.name,
-        projectId: p.id,
+        projectId: p.id
       }))
     )
     .sort((a, b) => b.id - a.id);
 
   if (selectedProject) {
-    const projectQuotes = quotes.filter(
-      (q) => q.projectId === selectedProject.id
-    );
+    const projectQuotes = quotes.filter((q) => q.projectId === selectedProject.id);
     return (
       <div className="space-y-6">
         <button
@@ -211,14 +433,13 @@ const SuperAdminDashboard = ({ projects, quotes }) => {
           <ArrowLeft size={16} /> Back to Admin Dashboard
         </button>
         <div className="bg-slate-900 text-white p-4 rounded-lg flex justify-between items-center">
-          <h2 className="text-xl font-bold">
-            Admin Audit: {selectedProject.name}
-          </h2>
+          <h2 className="text-xl font-bold">Admin Audit: {selectedProject.name}</h2>
           <span className="text-xs bg-slate-700 px-2 py-1 rounded">
             ID: {selectedProject.id}
           </span>
         </div>
         <Timeline activeStage={selectedProject.stage} />
+        <StageInfoPanel stageNumber={selectedProject.stage} />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white p-6 rounded-lg border border-slate-200">
             <h3 className="font-bold mb-4">Quotes Received</h3>
@@ -242,10 +463,7 @@ const SuperAdminDashboard = ({ projects, quotes }) => {
                 ))}
                 {projectQuotes.length === 0 && (
                   <tr>
-                    <td
-                      colSpan="3"
-                      className="py-4 text-center text-slate-400"
-                    >
+                    <td colSpan="3" className="py-4 text-center text-slate-400">
                       No quotes yet
                     </td>
                   </tr>
@@ -301,9 +519,7 @@ const SuperAdminDashboard = ({ projects, quotes }) => {
 
       {activeTab === 'Overview' && (
         <div className="space-y-6">
-          <h3 className="text-lg font-bold text-slate-700">
-            Macro Platform View
-          </h3>
+          <h3 className="text-lg font-bold text-slate-700">Macro Platform View</h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="bg-white p-5 rounded-lg border border-slate-200 shadow-sm">
               <p className="text-xs text-slate-500 uppercase font-bold mb-1">
@@ -330,9 +546,7 @@ const SuperAdminDashboard = ({ projects, quotes }) => {
               <p className="text-2xl font-bold text-slate-800">
                 {projects.length}
               </p>
-              <p className="text-xs text-slate-400 mt-2">
-                Across all stages
-              </p>
+              <p className="text-xs text-slate-400 mt-2">Across all stages</p>
             </div>
             <div className="bg-white p-5 rounded-lg border border-slate-200 shadow-sm">
               <p className="text-xs text-slate-500 uppercase font-bold mb-1">
@@ -341,9 +555,7 @@ const SuperAdminDashboard = ({ projects, quotes }) => {
               <p className="text-2xl font-bold text-purple-600">
                 {activeBids}
               </p>
-              <p className="text-xs text-slate-400 mt-2">
-                Quotes Submitted
-              </p>
+              <p className="text-xs text-slate-400 mt-2">Quotes Submitted</p>
             </div>
           </div>
 
@@ -364,9 +576,7 @@ const SuperAdminDashboard = ({ projects, quotes }) => {
                       <div className="w-2 h-2 rounded-full bg-blue-500" />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-slate-800">
-                        {log.action}
-                      </p>
+                      <p className="font-medium text-slate-800">{log.action}</p>
                       <p className="text-xs text-slate-500">
                         Project: {log.projectName} • User: {log.user}
                       </p>
@@ -384,18 +594,12 @@ const SuperAdminDashboard = ({ projects, quotes }) => {
               </div>
             </div>
             <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm">
-              <h3 className="font-bold text-slate-800 mb-4">
-                Manufacturer Leaderboard
-              </h3>
+              <h3 className="font-bold text-slate-800 mb-4">Manufacturer Leaderboard</h3>
               <div className="space-y-3">
                 {['Alpha Lifts', 'Beta Elevators', 'Gamma Corp', 'Delta Lifts'].map(
                   (mfr, i) => {
-                    const mfrQuotes = quotes.filter((q) =>
-                      q.mfrName.includes(mfr)
-                    );
-                    const wins = mfrQuotes.filter(
-                      (q) => q.status === 'Accepted'
-                    ).length;
+                    const mfrQuotes = quotes.filter((q) => q.mfrName.includes(mfr));
+                    const wins = mfrQuotes.filter((q) => q.status === 'Accepted').length;
                     return (
                       <div
                         key={i}
@@ -446,21 +650,8 @@ const SuperAdminDashboard = ({ projects, quotes }) => {
                   <td className="p-4">
                     <button
                       onClick={() => setSelectedProject(p)}
-                      className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
+                      className="text-blue-600 hover:text-blue-800 font-medium text-xs flex items-center gap-1"
                     >
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
-                        <circle cx="12" cy="12" r="3" />
-                      </svg>
                       Audit
                     </button>
                   </td>
@@ -468,10 +659,7 @@ const SuperAdminDashboard = ({ projects, quotes }) => {
               ))}
               {projects.length === 0 && (
                 <tr>
-                  <td
-                    colSpan="6"
-                    className="p-8 text-center text-slate-400"
-                  >
+                  <td colSpan="6" className="p-8 text-center text-slate-400">
                     No projects found.
                   </td>
                 </tr>
@@ -495,12 +683,9 @@ const SuperAdminDashboard = ({ projects, quotes }) => {
                     {log.timestamp}
                   </div>
                   <div>
-                    <p className="font-medium text-slate-800">
-                      {log.action}
-                    </p>
+                    <p className="font-medium text-slate-800">{log.action}</p>
                     <p className="text-xs text-slate-500">
-                      User: {log.user} • Project: {log.projectName} (
-                      {log.projectId})
+                      User: {log.user} • Project: {log.projectName} ({log.projectId})
                     </p>
                   </div>
                 </div>
@@ -519,9 +704,7 @@ const SuperAdminDashboard = ({ projects, quotes }) => {
               </div>
             ))}
             {allLogs.length === 0 && (
-              <p className="text-center text-slate-400">
-                No transactions recorded.
-              </p>
+              <p className="text-center text-slate-400">No transactions recorded.</p>
             )}
           </div>
         </div>
@@ -530,7 +713,9 @@ const SuperAdminDashboard = ({ projects, quotes }) => {
   );
 };
 
-// --- CUSTOMER COMPONENTS ---
+/* ------------------------------------------------------------------
+   CUSTOMER FLOW
+-------------------------------------------------------------------*/
 
 const CustomerWizard = ({ onComplete }) => {
   const [step, setStep] = useState(1);
@@ -542,16 +727,18 @@ const CustomerWizard = ({ onComplete }) => {
     shaftAvailable: '',
     machineRoom: '',
     width: '',
-    depth: '',
+    depth: ''
   });
 
-  const update = (k, v) => setData({ ...data, [k]: v });
+  const update = (k, v) => setData((prev) => ({ ...prev, [k]: v }));
   const next = () => setStep((s) => s + 1);
 
   return (
     <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg border border-slate-200 p-8 my-8">
       <div className="flex justify-between items-center mb-6 border-b pb-4">
-        <h2 className="font-bold text-lg">New Lift Requirement</h2>
+        <h2 className="font-bold text-lg">
+          Stage 1–2: Onboarding &amp; Requirement Capture
+        </h2>
         <span className="text-xs bg-slate-100 px-2 py-1 rounded">
           Step {step}/5
         </span>
@@ -559,9 +746,14 @@ const CustomerWizard = ({ onComplete }) => {
 
       {step === 1 && (
         <div className="space-y-4">
-          <h3>Building Type?</h3>
+          <h3 className="font-semibold text-slate-800">
+            What kind of building is this for?
+          </h3>
+          <p className="text-xs text-slate-500">
+            This helps us pick the right models, codes and AMC expectations.
+          </p>
           <div className="grid grid-cols-2 gap-4">
-            {['Residential', 'Commercial', 'Industrial', 'Hospital'].map(
+            {['Residential', 'Stilt + 4', 'Apartment Block', 'Commercial'].map(
               (t) => (
                 <button
                   key={t}
@@ -569,7 +761,7 @@ const CustomerWizard = ({ onComplete }) => {
                     update('type', t);
                     next();
                   }}
-                  className="p-4 border rounded hover:border-emerald-500"
+                  className="p-4 border rounded hover:border-emerald-500 text-sm text-left"
                 >
                   {t}
                 </button>
@@ -581,21 +773,25 @@ const CustomerWizard = ({ onComplete }) => {
 
       {step === 2 && (
         <div className="space-y-4">
-          <h3>Configuration</h3>
-          <input
-            placeholder="Location (City)"
-            className="w-full border p-2 rounded"
-            onChange={(e) => update('location', e.target.value)}
-          />
-          <input
-            placeholder="Floors"
-            type="number"
-            className="w-full border p-2 rounded"
-            onChange={(e) => update('floors', e.target.value)}
-          />
+          <h3 className="font-semibold text-slate-800">
+            Basic configuration &amp; location
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input
+              placeholder="City / Locality"
+              className="w-full border p-2 rounded text-sm"
+              onChange={(e) => update('location', e.target.value)}
+            />
+            <input
+              placeholder="Floors to be served"
+              type="number"
+              className="w-full border p-2 rounded text-sm"
+              onChange={(e) => update('floors', e.target.value)}
+            />
+          </div>
           <button
             onClick={next}
-            className="bg-emerald-600 text-white px-4 py-2 rounded"
+            className="bg-emerald-600 text-white px-4 py-2 rounded text-sm"
           >
             Next
           </button>
@@ -604,25 +800,31 @@ const CustomerWizard = ({ onComplete }) => {
 
       {step === 3 && (
         <div className="space-y-4">
-          <h3>Shaft Ready?</h3>
+          <h3 className="font-semibold text-slate-800">
+            Is a lift shaft already planned or constructed?
+          </h3>
+          <p className="text-xs text-slate-500">
+            If not, we’ll flag that a site survey and architect coordination is
+            needed.
+          </p>
           <div className="flex gap-4">
             <button
               onClick={() => {
                 update('shaftAvailable', 'Yes');
                 next();
               }}
-              className="flex-1 border p-4"
+              className="flex-1 border p-4 rounded text-sm"
             >
-              Yes
+              Yes, shaft is ready / planned
             </button>
             <button
               onClick={() => {
                 update('shaftAvailable', 'No');
                 next();
               }}
-              className="flex-1 border p-4"
+              className="flex-1 border p-4 rounded text-sm"
             >
-              No
+              No, needs guidance
             </button>
           </div>
         </div>
@@ -630,20 +832,27 @@ const CustomerWizard = ({ onComplete }) => {
 
       {step === 4 && (
         <div className="space-y-4">
-          <h3>Dimensions</h3>
-          <input
-            placeholder="Width (mm)"
-            className="w-full border p-2 rounded"
-            onChange={(e) => update('width', e.target.value)}
-          />
-          <input
-            placeholder="Depth (mm)"
-            className="w-full border p-2 rounded"
-            onChange={(e) => update('depth', e.target.value)}
-          />
+          <h3 className="font-semibold text-slate-800">
+            Do you know the approximate shaft dimensions?
+          </h3>
+          <p className="text-xs text-slate-500">
+            You can share rough values now and upload drawings later if needed.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input
+              placeholder="Width (mm)"
+              className="w-full border p-2 rounded text-sm"
+              onChange={(e) => update('width', e.target.value)}
+            />
+            <input
+              placeholder="Depth (mm)"
+              className="w-full border p-2 rounded text-sm"
+              onChange={(e) => update('depth', e.target.value)}
+            />
+          </div>
           <button
             onClick={next}
-            className="bg-emerald-600 text-white px-4 py-2 rounded"
+            className="bg-emerald-600 text-white px-4 py-2 rounded text-sm"
           >
             Next
           </button>
@@ -651,11 +860,17 @@ const CustomerWizard = ({ onComplete }) => {
       )}
 
       {step === 5 && (
-        <div className="text-center">
-          <h3 className="text-xl font-bold mb-4">Submit Enquiry?</h3>
+        <div className="text-center space-y-4">
+          <h3 className="text-xl font-bold mb-2">
+            Ready to create your Lift4M project?
+          </h3>
+          <p className="text-xs text-slate-500 max-w-md mx-auto">
+            We’ll treat this as a verified requirement and broadcast it to our
+            manufacturer pool at Stage 4 after feasibility &amp; survey checks.
+          </p>
           <button
             onClick={() => onComplete(data)}
-            className="bg-emerald-600 text-white px-8 py-3 rounded"
+            className="bg-emerald-600 text-white px-8 py-3 rounded text-sm font-semibold"
           >
             Post to Marketplace
           </button>
@@ -665,12 +880,7 @@ const CustomerWizard = ({ onComplete }) => {
   );
 };
 
-const CustomerProjectView = ({
-  project,
-  quotes,
-  onBack,
-  onSelectQuote,
-}) => {
+const CustomerProjectView = ({ project, quotes, onBack, onSelectQuote }) => {
   const [tab, setTab] = useState('Overview');
   const projectQuotes = quotes.filter((q) => q.projectId === project.id);
 
@@ -691,6 +901,7 @@ const CustomerProjectView = ({
         </div>
       </div>
       <Timeline activeStage={project.stage} />
+      <StageInfoPanel stageNumber={project.stage} />
 
       <div className="flex border-b border-slate-200 mb-6 overflow-x-auto">
         {['Overview', 'Review Proposals', 'Financials', 'Files'].map((t) => (
@@ -743,8 +954,8 @@ const CustomerProjectView = ({
                   Action Required: {projectQuotes.length} Quotes Received
                 </p>
                 <p className="text-xs text-blue-600">
-                  Please review proposals and select a manufacturer to proceed
-                  to Stage 5.
+                  Please review proposals and select a manufacturer to move into
+                  tri-party contract.
                 </p>
               </div>
               <button
@@ -787,9 +998,7 @@ const CustomerProjectView = ({
                       <p className="text-2xl font-bold text-slate-800">
                         {formatINR(q.price)}
                       </p>
-                      <p className="text-xs text-slate-500">
-                        Total Project Cost
-                      </p>
+                      <p className="text-xs text-slate-500">Total Project Cost</p>
                     </div>
                   </div>
                   <h4 className="font-bold text-lg mb-1">{q.mfrName}</h4>
@@ -810,9 +1019,7 @@ const CustomerProjectView = ({
                         Ask Question
                       </button>
                       <button
-                        onClick={() =>
-                          onSelectQuote(project.id, q.id)
-                        }
+                        onClick={() => onSelectQuote(project.id, q.id)}
                         className="bg-slate-900 text-white py-2 rounded text-sm font-bold hover:bg-emerald-600 transition"
                       >
                         Select &amp; Close
@@ -833,22 +1040,22 @@ const CustomerProjectView = ({
   );
 };
 
-// --- MANUFACTURER COMPONENTS ---
+/* ------------------------------------------------------------------
+   MANUFACTURER FLOW
+-------------------------------------------------------------------*/
 
 const LeadsMarketplace = ({ projects, user, onSubmitQuote, products }) => {
   const [selectedLead, setSelectedLead] = useState(null);
   const [quoteForm, setQuoteForm] = useState({
     price: '',
     leadTime: '',
-    productId: '',
+    productId: ''
   });
 
-  const leads = projects.filter((p) => p.stage <= 4);
+  const leads = projects.filter((p) => p.stage >= 2 && p.stage <= 4);
 
   const submit = () => {
-    const selectedProduct = products.find(
-      (p) => p.id === quoteForm.productId
-    );
+    const selectedProduct = products.find((p) => p.id === quoteForm.productId);
     onSubmitQuote({
       projectId: selectedLead.id,
       mfrId: user.id,
@@ -857,7 +1064,7 @@ const LeadsMarketplace = ({ projects, user, onSubmitQuote, products }) => {
       leadTime: quoteForm.leadTime,
       productId: quoteForm.productId,
       productName: selectedProduct?.name || 'Custom',
-      specs: selectedProduct?.capacity || 'N/A',
+      specs: selectedProduct?.capacity || 'N/A'
     });
     setSelectedLead(null);
     setQuoteForm({ price: '', leadTime: '', productId: '' });
@@ -909,10 +1116,10 @@ const LeadsMarketplace = ({ projects, user, onSubmitQuote, products }) => {
                 Select Product from Inventory
               </label>
               <select
-                className="w-full border p-2 rounded"
+                className="w-full border p-2 rounded text-sm"
                 value={quoteForm.productId}
                 onChange={(e) =>
-                  setQuoteForm({ ...quoteForm, productId: e.target.value })
+                  setQuoteForm((prev) => ({ ...prev, productId: e.target.value }))
                 }
               >
                 <option value="">-- Choose Product --</option>
@@ -931,15 +1138,13 @@ const LeadsMarketplace = ({ projects, user, onSubmitQuote, products }) => {
                   Your Price (INR)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2 text-slate-500">
-                    ₹
-                  </span>
+                  <span className="absolute left-3 top-2 text-slate-500">₹</span>
                   <input
                     type="number"
-                    className="w-full border p-2 pl-6 rounded"
+                    className="w-full border p-2 pl-6 rounded text-sm"
                     value={quoteForm.price}
                     onChange={(e) =>
-                      setQuoteForm({ ...quoteForm, price: e.target.value })
+                      setQuoteForm((prev) => ({ ...prev, price: e.target.value }))
                     }
                   />
                 </div>
@@ -950,13 +1155,10 @@ const LeadsMarketplace = ({ projects, user, onSubmitQuote, products }) => {
                 </label>
                 <input
                   type="number"
-                  className="w-full border p-2 rounded"
+                  className="w-full border p-2 rounded text-sm"
                   value={quoteForm.leadTime}
                   onChange={(e) =>
-                    setQuoteForm({
-                      ...quoteForm,
-                      leadTime: e.target.value,
-                    })
+                    setQuoteForm((prev) => ({ ...prev, leadTime: e.target.value }))
                   }
                 />
               </div>
@@ -964,7 +1166,7 @@ const LeadsMarketplace = ({ projects, user, onSubmitQuote, products }) => {
             <button
               onClick={submit}
               disabled={!quoteForm.productId || !quoteForm.price}
-              className="w-full bg-emerald-600 text-white py-3 rounded font-bold hover:bg-emerald-700 disabled:bg-slate-300"
+              className="w-full bg-emerald-600 text-white py-3 rounded font-bold hover:bg-emerald-700 disabled:bg-slate-300 text-sm"
             >
               Submit Quote
             </button>
@@ -1030,14 +1232,10 @@ const ManufacturerDashboard = ({ quotes, user, setView }) => {
           </p>
         </div>
         <div className="bg-white p-6 rounded border shadow-sm">
-          <h3 className="font-bold text-lg mb-2 text-slate-700">
-            Success Rate
-          </h3>
+          <h3 className="font-bold text-lg mb-2 text-slate-700">Success Rate</h3>
           <div className="text-4xl font-bold text-slate-800">
             {won}{' '}
-            <span className="text-sm font-normal text-slate-500">
-              Deals Won
-            </span>
+            <span className="text-sm font-normal text-slate-500">Deals Won</span>
           </div>
         </div>
       </div>
@@ -1066,10 +1264,7 @@ const ManufacturerDashboard = ({ quotes, user, setView }) => {
             ))}
             {myQuotes.length === 0 && (
               <tr>
-                <td
-                  colSpan="4"
-                  className="p-4 text-center text-slate-400"
-                >
+                <td colSpan="4" className="p-4 text-center text-slate-400">
                   No quotes submitted yet.
                 </td>
               </tr>
@@ -1081,7 +1276,9 @@ const ManufacturerDashboard = ({ quotes, user, setView }) => {
   );
 };
 
-// --- MAIN APP ---
+/* ------------------------------------------------------------------
+   MAIN APP
+-------------------------------------------------------------------*/
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -1098,13 +1295,14 @@ export default function App() {
     setActiveProject(null);
   };
 
+  // Stage 2 – requirements captured
   const handleCreateProject = (data) => {
     if (!user) return;
     const newProject = {
       id: `PRJ-${Math.floor(1000 + Math.random() * 9000)}`,
-      name: `${data.type} Project`,
-      stage: 4,
-      status: 'Bidding',
+      name: `${data.type || 'Lift'} Project`,
+      stage: 2,
+      status: 'Requirements Submitted',
       type: data.type,
       client: user.name,
       floors: data.floors,
@@ -1114,22 +1312,23 @@ export default function App() {
       auditLogs: [
         {
           id: Date.now(),
-          action: 'Project Created & Posted to Marketplace',
+          action: 'Project Created & Requirements Captured (Stage 1–2)',
           user: user.name,
-          timestamp: new Date().toLocaleString(),
-        },
-      ],
+          timestamp: new Date().toLocaleString()
+        }
+      ]
     };
     setProjects((prev) => [newProject, ...prev]);
     setView('dashboard');
   };
 
+  // Manufacturer submits quote → Stage 4 & broadcast log
   const handleQuoteSubmit = (quoteData) => {
     const newQuote = {
       id: `QT-${Math.floor(1000 + Math.random() * 9000)}`,
       status: 'Submitted',
       submittedAt: new Date(),
-      ...quoteData,
+      ...quoteData
     };
     setQuotes((prev) => [newQuote, ...prev]);
 
@@ -1138,16 +1337,23 @@ export default function App() {
         p.id === quoteData.projectId
           ? {
               ...p,
+              stage: Math.max(p.stage, 4),
               status: 'Action Required',
               auditLogs: [
+                {
+                  id: Date.now() + 1,
+                  action: 'Lead broadcast to verified manufacturer pool (Stage 4)',
+                  user: 'System',
+                  timestamp: new Date().toLocaleString()
+                },
                 {
                   id: Date.now(),
                   action: `Quote Received from ${quoteData.mfrName}`,
                   user: 'System',
-                  timestamp: new Date().toLocaleString(),
+                  timestamp: new Date().toLocaleString()
                 },
-                ...(p.auditLogs || []),
-              ],
+                ...(p.auditLogs || [])
+              ]
             }
           : p
       )
@@ -1156,6 +1362,7 @@ export default function App() {
     setView('dashboard');
   };
 
+  // Customer selects quote → Stage 6 (contract)
   const handleSelectQuote = (projectId, quoteId) => {
     setQuotes((prev) =>
       prev.map((q) =>
@@ -1172,18 +1379,18 @@ export default function App() {
         p.id === projectId
           ? {
               ...p,
-              stage: 5,
-              status: 'Selection',
+              stage: 6,
+              status: 'Contract',
               auditLogs: [
                 {
                   id: Date.now(),
                   action:
-                    'Manufacturer Selected. Moving to Contracting.',
+                    'Customer selected manufacturer – tri-party contract initiated (Stage 6)',
                   user: user?.name || 'Customer',
-                  timestamp: new Date().toLocaleString(),
+                  timestamp: new Date().toLocaleString()
                 },
-                ...(p.auditLogs || []),
-              ],
+                ...(p.auditLogs || [])
+              ]
             }
           : p
       )
@@ -1200,12 +1407,7 @@ export default function App() {
     if (!user) return null;
 
     if (user.role === ROLES.ADMIN) {
-      return (
-        <SuperAdminDashboard
-          projects={projects}
-          quotes={quotes}
-        />
-      );
+      return <SuperAdminDashboard projects={projects} quotes={quotes} />;
     }
 
     if (user.role === ROLES.CUSTOMER) {
@@ -1223,16 +1425,14 @@ export default function App() {
         <div className="space-y-6">
           <div className="flex justify-between items-center bg-white p-6 rounded-lg border shadow-sm">
             <div>
-              <h2 className="text-2xl font-bold">
-                Welcome, {user.name}
-              </h2>
+              <h2 className="text-2xl font-bold">Welcome, {user.name}</h2>
               <p className="text-slate-500">
-                Manage your lift installations.
+                Stage 1–2: capture requirements, then track end-to-end.
               </p>
             </div>
             <button
               onClick={() => setView('wizard')}
-              className="bg-emerald-600 text-white px-4 py-2 rounded flex items-center gap-2"
+              className="bg-emerald-600 text-white px-4 py-2 rounded flex items-center gap-2 text-sm"
             >
               <Plus size={18} /> New Project
             </button>
@@ -1242,14 +1442,15 @@ export default function App() {
             <h3 className="font-bold text-lg mb-4">My Projects</h3>
             {projects.length === 0 ? (
               <p className="text-center text-slate-500 py-8">
-                No active projects. Create one to start bidding.
+                No active projects. Create one to start the Lift4M workflow.
               </p>
             ) : (
               <div className="space-y-3">
                 {projects.map((p) => {
-                  const count = quotes.filter(
-                    (q) => q.projectId === p.id
-                  ).length;
+                  const count = quotes.filter((q) => q.projectId === p.id).length;
+                  const stageLabel =
+                    CORE_STAGES.find((s) => s.id === p.stage)?.shortLabel ||
+                    `Stage ${p.stage}`;
                   return (
                     <div
                       key={p.id}
@@ -1261,15 +1462,12 @@ export default function App() {
                           {p.name}
                         </p>
                         <p className="text-xs text-slate-500">
-                          {p.id} •{' '}
-                          {p.stage === 4
-                            ? 'Bidding Phase'
-                            : 'Processing'}
+                          {p.id} • {stageLabel}
                         </p>
                       </div>
                       <div className="text-right">
                         <StatusBadge status={p.status} />
-                        {p.stage === 4 && count > 0 && (
+                        {p.stage >= 4 && count > 0 && (
                           <p className="text-xs text-blue-600 font-bold mt-1">
                             {count} Quotes Received
                           </p>
@@ -1297,16 +1495,12 @@ export default function App() {
         );
       }
       return (
-        <ManufacturerDashboard
-          quotes={quotes}
-          user={user}
-          setView={setView}
-        />
+        <ManufacturerDashboard quotes={quotes} user={user} setView={setView} />
       );
     }
 
-    // Maintenance view can be plugged in here later
-    return <div>Dashboard Placeholder</div>;
+    // Maintenance role placeholder
+    return <div>Maintenance dashboard coming soon.</div>;
   };
 
   if (!user) {
@@ -1323,7 +1517,7 @@ export default function App() {
           <span className="text-xl font-bold">Lift4M</span>
         </div>
         <div className="px-6 py-2">
-          <nav className="space-y-1">
+          <nav className="space-y-1 text-sm">
             <button
               onClick={() => {
                 setView('dashboard');
@@ -1351,15 +1545,19 @@ export default function App() {
             )}
           </nav>
         </div>
-        <div className="mt-auto p-4 border-t border-slate-800">
-          <div className="mb-4 text-xs text-slate-500 font-mono">
+        <div className="mt-auto p-4 border-t border-slate-800 text-xs">
+          <div className="mb-4 text-slate-500 font-mono">
             Logged in as:
             <br />
             <span className="text-white font-bold">{user.name}</span>
           </div>
           <button
-            onClick={() => setUser(null)}
-            className="flex items-center gap-2 text-xs text-red-400"
+            onClick={() => {
+              setUser(null);
+              setView('dashboard');
+              setActiveProject(null);
+            }}
+            className="flex items-center gap-2 text-red-400"
           >
             <LogOut size={14} /> Sign Out
           </button>
@@ -1368,15 +1566,13 @@ export default function App() {
       <main className="flex-1 md:ml-64 flex flex-col min-h-screen">
         <header className="bg-white h-16 border-b border-slate-200 sticky top-0 z-10 flex items-center justify-between px-6 shadow-sm">
           <h2 className="text-lg font-bold text-slate-800">
-            Lift4M Workspace
+            Lift4M Workspace — 10-Stage Project Timeline
           </h2>
           <div className="bg-slate-100 p-2 rounded-full">
             <Bell size={20} />
           </div>
         </header>
-        <div className="p-6 md:p-8 overflow-y-auto flex-1">
-          {renderContent()}
-        </div>
+        <div className="p-6 md:p-8 overflow-y-auto flex-1">{renderContent()}</div>
       </main>
     </div>
   );
