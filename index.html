@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lift4M Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="logo">Lift4M</div>
+      <nav>
+        <a class="active" href="#">Projects</a>
+        <a href="#">Leads</a>
+        <a href="#">Contracts</a>
+        <a href="#">Service</a>
+        <a href="#">Settings</a>
+      </nav>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div class="search">
+          <input type="text" placeholder="Search projects, buildings, stakeholders" />
+        </div>
+        <div class="top-actions">
+          <span class="chip chip-amber">Live SLA Countdown</span>
+          <div class="avatar">SA</div>
+        </div>
+      </header>
+
+      <section class="controls">
+        <div class="control-group">
+          <label for="roleSelect">Role dashboard</label>
+          <select id="roleSelect"></select>
+        </div>
+        <div class="control-group">
+          <label for="projectTypeSelect">Project type</label>
+          <select id="projectTypeSelect"></select>
+        </div>
+        <button id="newProject" class="primary">Create project</button>
+      </section>
+
+      <section class="summary-grid" id="summaryGrid"></section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Live timeline</p>
+            <h2>Order tracking</h2>
+            <p class="subhead">Lifecycle visibility for every stakeholder with audit history.</p>
+          </div>
+          <div class="panel-actions">
+            <button class="ghost" id="filterProjects">Filter projects</button>
+            <button class="primary" id="exportTimeline">Export</button>
+          </div>
+        </div>
+        <div class="timeline" id="timeline"></div>
+      </section>
+
+      <section class="grid-two">
+        <div class="panel" id="stageDetails"></div>
+        <div class="panel" id="stageMapping"></div>
+      </section>
+
+      <section class="panel" id="aiRanking"></section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
