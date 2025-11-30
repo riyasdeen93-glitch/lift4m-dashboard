@@ -259,6 +259,8 @@ const StatusBadge = ({ status }) => {
   const styles = {
     Active: 'bg-emerald-100 text-emerald-800',
     Pending: 'bg-amber-100 text-amber-800',
+    'Requirements Submitted': 'bg-amber-50 text-amber-700',
+    'Survey Scheduled': 'bg-amber-50 text-amber-700',
     Bidding: 'bg-blue-100 text-blue-800',
     Quoted: 'bg-purple-100 text-purple-800',
     'Action Required': 'bg-red-100 text-red-800',
@@ -266,7 +268,10 @@ const StatusBadge = ({ status }) => {
     Accepted: 'bg-green-100 text-green-800',
     Rejected: 'bg-red-50 text-red-400',
     Submitted: 'bg-blue-50 text-blue-600',
-    Contract: 'bg-slate-800 text-white'
+    Contract: 'bg-slate-800 text-white',
+    'GAD Approval': 'bg-indigo-50 text-indigo-700',
+    Production: 'bg-sky-50 text-sky-700',
+    Installation: 'bg-teal-50 text-teal-700'
   };
   return (
     <span
@@ -880,9 +885,60 @@ const CustomerWizard = ({ onComplete }) => {
   );
 };
 
-const CustomerProjectView = ({ project, quotes, onBack, onSelectQuote }) => {
+const CustomerProjectView = ({
+  project,
+  quotes,
+  onBack,
+  onSelectQuote,
+  onAdvanceStage
+}) => {
   const [tab, setTab] = useState('Overview');
   const projectQuotes = quotes.filter((q) => q.projectId === project.id);
+
+  const getStageAction = () => {
+    switch (project.stage) {
+      case 2:
+        return {
+          label: 'Request Site Survey (Move to Stage 3)',
+          description:
+            'Trigger a certified Lift4M technician visit to verify measurements and feasibility.'
+        };
+      case 3:
+        return {
+          label: 'Approve Feasibility & Broadcast Lead (Stage 4)',
+          description:
+            'Confirm feasibility report and push this opportunity to the verified manufacturer pool.'
+        };
+      case 6:
+        return {
+          label: 'Confirm Contract Signed & Request GAD (Stage 7)',
+          description:
+            'Treat the deal as closed, move to GAD design freeze and multi-party approval workflow.'
+        };
+      case 7:
+        return {
+          label: 'Approve GAD & Move to Production (Stage 8)',
+          description:
+            'All stakeholders have signed off on drawings — start production and pre-install readiness.'
+        };
+      case 8:
+        return {
+          label: 'Mark Production Ready & Start Installation (Stage 9)',
+          description:
+            'Factory QC done and JRC signed — dispatch material and begin on-site installation.'
+        };
+      case 9:
+        return {
+          label: 'Commissioning Complete & Handover (Stage 10)',
+          description:
+            'Confirm ARD, safety circuits and load tests; move project into handover + AMC mode.'
+        };
+      default:
+        return null;
+    }
+  };
+
+  const stageAction = getStageAction();
 
   return (
     <div className="space-y-6">
@@ -947,6 +1003,26 @@ const CustomerProjectView = ({ project, quotes, onBack, onSelectQuote }) => {
               <StatusBadge status={project.status} />
             </div>
           </div>
+
+          {stageAction && (
+            <div className="mt-6 p-4 bg-emerald-50 border border-emerald-100 rounded-lg flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div>
+                <p className="font-bold text-emerald-800 text-sm">
+                  Next recommended action
+                </p>
+                <p className="text-xs text-emerald-700 max-w-lg">
+                  {stageAction.description}
+                </p>
+              </div>
+              <button
+                onClick={() => onAdvanceStage(project.id)}
+                className="bg-emerald-600 text-white px-4 py-2 rounded text-xs font-semibold whitespace-nowrap"
+              >
+                {stageAction.label}
+              </button>
+            </div>
+          )}
+
           {project.stage === 4 && projectQuotes.length > 0 && (
             <div className="mt-6 p-4 bg-blue-50 border border-blue-100 rounded-lg flex justify-between items-center">
               <div>
@@ -1399,6 +1475,75 @@ export default function App() {
     setActiveProject(null);
   };
 
+  // Generic stage advancement for CTA card
+  const handleAdvanceStage = (projectId) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id !== projectId) return p;
+
+        let nextStage = p.stage;
+        let status = p.status;
+        let actionText = '';
+
+        switch (p.stage) {
+          case 2:
+            nextStage = 3;
+            status = 'Survey Scheduled';
+            actionText =
+              'Customer requested site survey; moving to Stage 3 (Survey & Feasibility).';
+            break;
+          case 3:
+            nextStage = 4;
+            status = 'Bidding';
+            actionText =
+              'Feasibility approved; broadcasting lead to verified manufacturers (Stage 4).';
+            break;
+          case 6:
+            nextStage = 7;
+            status = 'GAD Approval';
+            actionText =
+              'Contract signed; requesting GAD drawings and stakeholder approvals (Stage 7).';
+            break;
+          case 7:
+            nextStage = 8;
+            status = 'Production';
+            actionText =
+              'GAD approved; moving to production and pre-installation readiness (Stage 8).';
+            break;
+          case 8:
+            nextStage = 9;
+            status = 'Installation';
+            actionText =
+              'Production ready; dispatching material and starting on-site installation (Stage 9).';
+            break;
+          case 9:
+            nextStage = 10;
+            status = 'Completed';
+            actionText =
+              'Commissioning complete; project handed over and AMC / digital logbook activated (Stage 10).';
+            break;
+          default:
+            return p;
+        }
+
+        return {
+          ...p,
+          stage: nextStage,
+          status,
+          auditLogs: [
+            {
+              id: Date.now(),
+              action: actionText,
+              user: user?.name || 'Customer',
+              timestamp: new Date().toLocaleString()
+            },
+            ...(p.auditLogs || [])
+          ]
+        };
+      })
+    );
+  };
+
   const renderContent = () => {
     if (view === 'wizard') {
       return <CustomerWizard onComplete={handleCreateProject} />;
@@ -1418,6 +1563,7 @@ export default function App() {
             quotes={quotes}
             onBack={() => setActiveProject(null)}
             onSelectQuote={handleSelectQuote}
+            onAdvanceStage={handleAdvanceStage}
           />
         );
       }
@@ -1564,7 +1710,7 @@ export default function App() {
         </div>
       </div>
       <main className="flex-1 md:ml-64 flex flex-col min-h-screen">
-        <header className="bg-white h-16 border-b border-slate-200 sticky top-0 z-10 flex items-center justify-between px-6 shadow-sm">
+        <header className="bg-white h-16 border-b border-slate-200 sticky top-0 z-10 flex items-center justify-between px-6 novidadeshadow-sm">
           <h2 className="text-lg font-bold text-slate-800">
             Lift4M Workspace — 10-Stage Project Timeline
           </h2>
