@@ -41,7 +41,7 @@ const SAMPLE_CREDENTIALS = [
 ];
 
 /* ------------------------------------------------------------------
-   10-STAGE BACKBONE (UPDATED: SURVEY AFTER TOP-3 QUOTES)
+   10-STAGE BACKBONE (Survey moved to Stage 5)
 -------------------------------------------------------------------*/
 
 const CORE_STAGES = [
@@ -474,7 +474,7 @@ const StageInfoPanel = ({ stageNumber }) => {
 };
 
 /* ------------------------------------------------------------------
-   SIMPLE 2D SHAFT DIAGRAM (EDUCATIONAL)
+   IMPROVED 2D SHAFT DIAGRAM
 -------------------------------------------------------------------*/
 
 const ShaftDiagram = () => (
@@ -482,38 +482,42 @@ const ShaftDiagram = () => (
     <p className="font-semibold mb-2">How to read the lift shaft dimensions</p>
     <div className="flex flex-col md:flex-row gap-4 items-center">
       {/* diagram box */}
-      <div className="relative w-56 h-40 bg-white border border-slate-300 rounded">
+      <div className="relative w-60 h-44 bg-white border border-slate-300 rounded">
         {/* shaft outline */}
-        <div className="absolute inset-6 border border-emerald-400 rounded-sm">
+        <div className="absolute inset-10 border-2 border-emerald-400 rounded-sm bg-emerald-50/30">
           <span className="absolute inset-x-0 -top-4 text-center text-[10px]">
-            Shaft (internal clear size)
+            Shaft (inside clear space)
           </span>
         </div>
-        {/* width arrow */}
-        <div className="absolute left-8 right-8 bottom-4 h-0.5 bg-slate-300">
-          <div className="absolute -left-1 -top-1 w-2 h-2 border-l border-t border-slate-400 rotate-45" />
-          <div className="absolute -right-1 -top-1 w-2 h-2 border-r border-b border-slate-400 rotate-45" />
-          <span className="absolute left-1/2 -translate-x-1/2 -top-4">
-            Width (mm)
-          </span>
+
+        {/* width (left-right) */}
+        <div className="absolute left-10 right-10 bottom-6 flex items-center justify-between text-[10px] text-slate-700">
+          <span>◀</span>
+          <span>Width (mm)</span>
+          <span>▶</span>
         </div>
-        {/* depth arrow */}
-        <div className="absolute top-8 bottom-8 right-4 w-0.5 bg-slate-300">
-          <div className="absolute -top-1 -right-1 w-2 h-2 border-t border-r border-slate-400 rotate-45" />
-          <div className="absolute -bottom-1 -right-1 w-2 h-2 border-b border-l border-slate-400 rotate-45" />
-          <span className="absolute -right-16 top-1/2 -translate-y-1/2">
-            Depth (mm)
-          </span>
+
+        {/* depth (front-back) */}
+        <div className="absolute top-10 bottom-10 right-3 flex flex-col items-center justify-between text-[10px] text-slate-700">
+          <span>▲</span>
+          <span className="rotate-90">Depth (mm)</span>
+          <span>▼</span>
         </div>
+
         {/* pit & headroom labels */}
-        <span className="absolute left-2 bottom-1">Pit depth ↓</span>
-        <span className="absolute left-2 top-1">Headroom height ↑</span>
+        <span className="absolute left-2 bottom-1 text-[10px]">
+          Pit depth ↓
+        </span>
+        <span className="absolute left-2 top-1 text-[10px]">
+          Headroom height ↑
+        </span>
       </div>
+
       {/* text help */}
       <div className="flex-1 space-y-1">
         <p>
-          <b>Shaft width</b> – clear distance between left and right wall inside
-          the lift shaft.
+          <b>Shaft width</b> – clear distance between left and right walls inside
+          the shaft.
         </p>
         <p>
           <b>Shaft depth</b> – clear distance from front door wall to back wall.
@@ -582,12 +586,20 @@ const LoginPage = ({ onLogin }) => (
 );
 
 /* ------------------------------------------------------------------
-   SUPER ADMIN DASHBOARD (NOW CONTROLS RATINGS)
+   SUPER ADMIN DASHBOARD (FULL STAGE CONTROL)
 -------------------------------------------------------------------*/
 
-const SuperAdminDashboard = ({ projects, quotes, mfrRatings, setMfrRatings }) => {
+const SuperAdminDashboard = ({
+  projects,
+  quotes,
+  mfrRatings,
+  setMfrRatings,
+  setProjects
+}) => {
   const [activeTab, setActiveTab] = useState('Overview');
   const [selectedProject, setSelectedProject] = useState(null);
+  const [adminStageValue, setAdminStageValue] = useState(null);
+  const [adminStatusValue, setAdminStatusValue] = useState('');
 
   const totalValue = quotes
     .filter((q) => q.status === 'Accepted')
@@ -614,24 +626,174 @@ const SuperAdminDashboard = ({ projects, quotes, mfrRatings, setMfrRatings }) =>
     }));
   };
 
+  const applyAdminStageUpdate = (projectId, newStage, newStatus, note) => {
+    const stageNumber = Number(newStage);
+    const statusText = newStatus || 'Admin Adjusted';
+
+    const core = CORE_STAGES.find((s) => s.id === stageNumber);
+    const stageLabel = core ? core.shortLabel : `Stage ${stageNumber}`;
+
+    const logEntry = {
+      id: Date.now(),
+      action: `Admin set stage to ${stageLabel}${
+        note ? ` (${note})` : ''
+      }`,
+      user: 'Super Admin',
+      timestamp: new Date().toLocaleString()
+    };
+
+    setProjects((prev) =>
+      prev.map((p) =>
+        p.id === projectId
+          ? {
+              ...p,
+              stage: stageNumber,
+              status: statusText,
+              auditLogs: [logEntry, ...(p.auditLogs || [])]
+            }
+          : p
+      )
+    );
+
+    // keep local view in sync
+    setSelectedProject((prev) =>
+      prev && prev.id === projectId
+        ? {
+            ...prev,
+            stage: stageNumber,
+            status: statusText,
+            auditLogs: [logEntry, ...(prev.auditLogs || [])]
+          }
+        : prev
+    );
+  };
+
   if (selectedProject) {
-    const projectQuotes = quotes.filter((q) => q.projectId === selectedProject.id);
+    if (adminStageValue == null) {
+      setAdminStageValue(selectedProject.stage);
+      setAdminStatusValue(selectedProject.status || '');
+    }
+    const projectQuotes = quotes.filter(
+      (q) => q.projectId === selectedProject.id
+    );
+
     return (
       <div className="space-y-6">
         <button
-          onClick={() => setSelectedProject(null)}
+          onClick={() => {
+            setSelectedProject(null);
+            setAdminStageValue(null);
+          }}
           className="text-sm text-slate-500 hover:text-slate-800 flex items-center gap-1"
         >
           <ArrowLeft size={16} /> Back to Admin Dashboard
         </button>
         <div className="bg-slate-900 text-white p-4 rounded-lg flex justify-between items-center">
-          <h2 className="text-xl font-bold">Admin Audit: {selectedProject.name}</h2>
+          <div>
+            <h2 className="text-xl font-bold">
+              Admin Audit: {selectedProject.name}
+            </h2>
+            <p className="text-xs text-slate-300">
+              Internal project name (masked from manufacturers until Stage 5).
+            </p>
+          </div>
           <span className="text-xs bg-slate-700 px-2 py-1 rounded">
             ID: {selectedProject.id}
           </span>
         </div>
         <Timeline activeStage={selectedProject.stage} />
         <StageInfoPanel stageNumber={selectedProject.stage} />
+
+        {/* Admin stage controls */}
+        <div className="bg-white rounded-lg border border-rose-200 shadow-sm p-5">
+          <h3 className="font-bold text-sm text-rose-700 mb-3">
+            Admin Stage Controls (Lift4M Override)
+          </h3>
+          <p className="text-xs text-slate-600 mb-3">
+            Use this if there is a dispute, data correction, or if a user needs
+            to move backward/forward in the workflow. Every change is logged in
+            the audit trail.
+          </p>
+          <div className="flex flex-col md:flex-row gap-4 items-center">
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-slate-600 font-semibold">
+                Stage
+              </label>
+              <select
+                className="border rounded px-2 py-1 text-xs"
+                value={adminStageValue ?? selectedProject.stage}
+                onChange={(e) =>
+                  setAdminStageValue(Number(e.target.value) || 1)
+                }
+              >
+                {CORE_STAGES.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.id} — {s.shortLabel}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-center gap-2 flex-1">
+              <label className="text-xs text-slate-600 font-semibold">
+                Status text
+              </label>
+              <input
+                className="border rounded px-2 py-1 text-xs w-full"
+                value={adminStatusValue}
+                onChange={(e) => setAdminStatusValue(e.target.value)}
+                placeholder="e.g., Bidding, Survey Scheduled, Contract, Completed..."
+              />
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() =>
+                  applyAdminStageUpdate(
+                    selectedProject.id,
+                    Math.max(
+                      1,
+                      (adminStageValue ?? selectedProject.stage) - 1
+                    ),
+                    adminStatusValue || selectedProject.status,
+                    'step back'
+                  )
+                }
+                className="px-3 py-1 rounded text-xs border border-slate-300 text-slate-700 hover:bg-slate-50"
+              >
+                ⟵ Step Back
+              </button>
+              <button
+                onClick={() =>
+                  applyAdminStageUpdate(
+                    selectedProject.id,
+                    Math.min(
+                      10,
+                      (adminStageValue ?? selectedProject.stage) + 1
+                    ),
+                    adminStatusValue || selectedProject.status,
+                    'step forward'
+                  )
+                }
+                className="px-3 py-1 rounded text-xs border border-slate-300 text-slate-700 hover:bg-slate-50"
+              >
+                Step Forward ⟶
+              </button>
+              <button
+                onClick={() =>
+                  applyAdminStageUpdate(
+                    selectedProject.id,
+                    adminStageValue ?? selectedProject.stage,
+                    adminStatusValue || selectedProject.status,
+                    'manual jump'
+                  )
+                }
+                className="px-4 py-1 rounded text-xs bg-rose-600 text-white font-semibold hover:bg-rose-700"
+              >
+                Apply Override
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white p-6 rounded-lg border border-slate-200">
             <h3 className="font-bold mb-4">Quotes Received</h3>
@@ -794,7 +956,8 @@ const SuperAdminDashboard = ({ projects, quotes, mfrRatings, setMfrRatings }) =>
               <div className="space-y-3">
                 {ratingList.map((mfr) => {
                   const mfrQuotes = quotes.filter((q) => q.mfrId === mfr.id);
-                  const wins = mfrQuotes.filter((q) => q.status === 'Accepted').length;
+                  const wins = mfrQuotes.filter((q) => q.status === 'Accepted')
+                    .length;
                   return (
                     <div
                       key={mfr.id}
@@ -851,10 +1014,14 @@ const SuperAdminDashboard = ({ projects, quotes, mfrRatings, setMfrRatings }) =>
                   </td>
                   <td className="p-4">
                     <button
-                      onClick={() => setSelectedProject(p)}
+                      onClick={() => {
+                        setSelectedProject(p);
+                        setAdminStageValue(p.stage);
+                        setAdminStatusValue(p.status || '');
+                      }}
                       className="text-blue-600 hover:text-blue-800 font-medium text-xs flex items-center gap-1"
                     >
-                      Audit
+                      Audit / Control
                     </button>
                   </td>
                 </tr>
@@ -963,12 +1130,13 @@ const SuperAdminDashboard = ({ projects, quotes, mfrRatings, setMfrRatings }) =>
 };
 
 /* ------------------------------------------------------------------
-   CUSTOMER FLOW – RICH WIZARD WITH DRIVE TYPE & DIAGRAM
+   CUSTOMER FLOW – WIZARD WITH BACK BUTTONS & PROJECT NAME
 -------------------------------------------------------------------*/
 
 const CustomerWizard = ({ onComplete }) => {
   const [step, setStep] = useState(1);
   const [data, setData] = useState({
+    projectName: '',
     type: '',
     location: '',
     floors: '',
@@ -985,17 +1153,31 @@ const CustomerWizard = ({ onComplete }) => {
 
   const update = (k, v) => setData((prev) => ({ ...prev, [k]: v }));
   const next = () => setStep((s) => s + 1);
+  const back = () => setStep((s) => Math.max(1, s - 1));
 
   return (
     <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg border border-slate-200 p-8 my-8">
-      <div className="flex justify-between items-center mb-6 border-b pb-4">
-        <h2 className="font-bold text-lg">
-          Stages 1–2: Onboarding, Selection Guide &amp; Measurement Capture
-        </h2>
+      <div className="flex justify-between items-center mb-4">
+        <div>
+          <h2 className="font-bold text-lg">
+            Stages 1–2: Onboarding, Selection Guide &amp; Measurement Capture
+          </h2>
+          <p className="text-xs text-slate-500">
+            You can go back and edit any step before posting to the marketplace.
+          </p>
+        </div>
         <span className="text-xs bg-slate-100 px-2 py-1 rounded">
           Step {step}/6
         </span>
       </div>
+      {step > 1 && (
+        <button
+          onClick={back}
+          className="text-xs text-slate-500 hover:text-slate-800 mb-4 flex items-center gap-1"
+        >
+          <ArrowLeft size={14} /> Back
+        </button>
+      )}
 
       {step === 1 && (
         <div className="space-y-4">
@@ -1027,67 +1209,18 @@ const CustomerWizard = ({ onComplete }) => {
       {step === 2 && (
         <div className="space-y-4">
           <h3 className="font-semibold text-slate-800">
-            Elevator type &amp; drive preference
+            Project / Building name (private)
           </h3>
           <p className="text-xs text-slate-500">
-            A quick guide so manufacturers receive more precise requirements.
+            This name will only be visible to you and the Lift4M team. Until a
+            manufacturer is awarded, we show only a generic label to vendors.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button
-              onClick={() => {
-                update('drivePreference', 'Pneumatic');
-                next();
-              }}
-              className="p-4 border rounded hover:border-emerald-500 text-left text-xs space-y-1"
-            >
-              <p className="font-semibold text-sm">Pneumatic / Vacuum</p>
-              <p>Ideal for small home lifts with minimal pit/headroom.</p>
-              <p>Typically lower capacity &amp; speed.</p>
-            </button>
-            <button
-              onClick={() => {
-                update('drivePreference', 'Hydraulic');
-                next();
-              }}
-              className="p-4 border rounded hover:border-emerald-500 text-left text-xs space-y-1"
-            >
-              <p className="font-semibold text-sm">Hydraulic</p>
-              <p>Good for villas &amp; low-rise, tolerant to low pit.</p>
-              <p>Oil-based system, usually 0.2–0.3 m/s.</p>
-            </button>
-            <button
-              onClick={() => {
-                update('drivePreference', 'Traction / MRL Traction');
-                next();
-              }}
-              className="p-4 border rounded hover:border-emerald-500 text-left text-xs space-y-1"
-            >
-              <p className="font-semibold text-sm">Traction / MRL</p>
-              <p>Standard for apartments &amp; commercial buildings.</p>
-              <p>Higher speed, best efficiency, needs deeper pit/headroom.</p>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {step === 3 && (
-        <div className="space-y-4">
-          <h3 className="font-semibold text-slate-800">
-            Basic configuration &amp; location
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input
-              placeholder="City / Locality"
-              className="w-full border p-2 rounded text-sm"
-              onChange={(e) => update('location', e.target.value)}
-            />
-            <input
-              placeholder="Floors to be served"
-              type="number"
-              className="w-full border p-2 rounded text-sm"
-              onChange={(e) => update('floors', e.target.value)}
-            />
-          </div>
+          <input
+            placeholder="e.g., TVH Eden – Block A, Villa #17"
+            className="w-full border p-2 rounded text-sm"
+            value={data.projectName}
+            onChange={(e) => update('projectName', e.target.value)}
+          />
           <button
             onClick={next}
             className="bg-emerald-600 text-white px-4 py-2 rounded text-sm"
@@ -1097,33 +1230,91 @@ const CustomerWizard = ({ onComplete }) => {
         </div>
       )}
 
+      {step === 3 && (
+        <div className="space-y-4">
+          <h3 className="font-semibold text-slate-800">
+            Elevator type &amp; drive preference
+          </h3>
+          <p className="text-xs text-slate-500">
+            A quick guide so manufacturers receive more precise requirements.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button
+              onClick={() => update('drivePreference', 'Pneumatic')}
+              className={`p-4 border rounded text-left text-xs space-y-1 ${
+                data.drivePreference === 'Pneumatic'
+                  ? 'border-emerald-500 bg-emerald-50'
+                  : 'hover:border-emerald-500'
+              }`}
+            >
+              <p className="font-semibold text-sm">Pneumatic / Vacuum</p>
+              <p>Ideal for small home lifts with minimal pit/headroom.</p>
+              <p>Typically lower capacity &amp; speed.</p>
+            </button>
+            <button
+              onClick={() => update('drivePreference', 'Hydraulic')}
+              className={`p-4 border rounded text-left text-xs space-y-1 ${
+                data.drivePreference === 'Hydraulic'
+                  ? 'border-emerald-500 bg-emerald-50'
+                  : 'hover:border-emerald-500'
+              }`}
+            >
+              <p className="font-semibold text-sm">Hydraulic</p>
+              <p>Good for villas &amp; low-rise, tolerant to low pit.</p>
+              <p>Oil-based system, usually 0.2–0.3 m/s.</p>
+            </button>
+            <button
+              onClick={() =>
+                update('drivePreference', 'Traction / MRL Traction')
+              }
+              className={`p-4 border rounded text-left text-xs space-y-1 ${
+                data.drivePreference === 'Traction / MRL Traction'
+                  ? 'border-emerald-500 bg-emerald-50'
+                  : 'hover:border-emerald-500'
+              }`}
+            >
+              <p className="font-semibold text-sm">Traction / MRL</p>
+              <p>Standard for apartments &amp; commercial buildings.</p>
+              <p>Higher speed, best efficiency, needs deeper pit/headroom.</p>
+            </button>
+          </div>
+          <div className="flex justify-end">
+            <button
+              onClick={next}
+              className="bg-emerald-600 text-white px-4 py-2 rounded text-sm"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
       {step === 4 && (
         <div className="space-y-4">
           <h3 className="font-semibold text-slate-800">
-            Is a lift shaft already planned or constructed?
+            Basic configuration &amp; location
           </h3>
-          <p className="text-xs text-slate-500">
-            If not, we’ll flag that a site survey and architect coordination is
-            needed.
-          </p>
-          <div className="flex gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input
+              placeholder="City / Locality"
+              className="w-full border p-2 rounded text-sm"
+              value={data.location}
+              onChange={(e) => update('location', e.target.value)}
+            />
+            <input
+              placeholder="Floors to be served"
+              type="number"
+              className="w-full border p-2 rounded text-sm"
+              value={data.floors}
+              onChange={(e) => update('floors', e.target.value)}
+            />
+          </div>
+          <div className="flex justify-end">
             <button
-              onClick={() => {
-                update('shaftAvailable', 'Yes');
-                next();
-              }}
-              className="flex-1 border p-4 rounded text-sm"
+              onClick={next}
+              className="bg-emerald-600 text-white px-4 py-2 rounded text-sm"
             >
-              Yes, shaft is ready / planned
-            </button>
-            <button
-              onClick={() => {
-                update('shaftAvailable', 'No');
-                next();
-              }}
-              className="flex-1 border p-4 rounded text-sm"
-            >
-              No, needs guidance
+              Next
             </button>
           </div>
         </div>
@@ -1142,21 +1333,25 @@ const CustomerWizard = ({ onComplete }) => {
             <input
               placeholder="Shaft width (mm)"
               className="w-full border p-2 rounded text-sm"
+              value={data.width}
               onChange={(e) => update('width', e.target.value)}
             />
             <input
               placeholder="Shaft depth (mm)"
               className="w-full border p-2 rounded text-sm"
+              value={data.depth}
               onChange={(e) => update('depth', e.target.value)}
             />
             <input
               placeholder="Pit depth (mm)"
               className="w-full border p-2 rounded text-sm"
+              value={data.pitDepth}
               onChange={(e) => update('pitDepth', e.target.value)}
             />
             <input
               placeholder="Headroom height (mm)"
               className="w-full border p-2 rounded text-sm"
+              value={data.headroom}
               onChange={(e) => update('headroom', e.target.value)}
             />
           </div>
@@ -1179,12 +1374,14 @@ const CustomerWizard = ({ onComplete }) => {
             )}
           </div>
           <ShaftDiagram />
-          <button
-            onClick={next}
-            className="bg-emerald-600 text-white px-4 py-2 rounded text-sm mt-4"
-          >
-            Next
-          </button>
+          <div className="flex justify-end mt-4">
+            <button
+              onClick={next}
+              className="bg-emerald-600 text-white px-4 py-2 rounded text-sm"
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
 
@@ -1194,9 +1391,9 @@ const CustomerWizard = ({ onComplete }) => {
             Ready to create your Lift4M project?
           </h3>
           <p className="text-xs text-slate-500 max-w-md mx-auto">
-            We’ll treat this as an initial requirement. Manufacturers will quote
-            based on these details (Stage 3–4), and Lift4M will physically verify
-            everything in Stage 5 before contract.
+            We’ll treat this as an initial requirement (Stages 1–2). As soon as
+            you submit, Lift4M will broadcast it to verified manufacturers
+            (Stage 3) and quotes will start coming in.
           </p>
           <button
             onClick={() => onComplete(data)}
@@ -1211,7 +1408,7 @@ const CustomerWizard = ({ onComplete }) => {
 };
 
 /* ------------------------------------------------------------------
-   CUSTOMER PROJECT VIEW – UPDATED STAGE FLOW & RATING VISIBILITY
+   CUSTOMER PROJECT VIEW – PRIVATE NAME & ADMIN CTA
 -------------------------------------------------------------------*/
 
 const CustomerProjectView = ({
@@ -1227,11 +1424,11 @@ const CustomerProjectView = ({
 
   const getStageAction = () => {
     switch (project.stage) {
-      case 2:
+      case 3:
         return {
-          label: 'Broadcast requirement to manufacturers (Stage 3)',
+          label: 'Request Top 3 AI-ranked quotes (Stage 4)',
           description:
-            'Once you are happy with the basic dimensions, push this opportunity to verified manufacturers.'
+            'Manufacturers are bidding on your requirement. Once enough bids are in, Lift4M will surface the best 3 options.'
         };
       case 4:
         return {
@@ -1330,7 +1527,7 @@ const CustomerProjectView = ({
             </div>
             <div>
               <p className="text-slate-500">Preferred drive</p>
-              <b>{project.drivePreference || 'Not specified'}</b>
+              <b>{project.drivePreference || 'Not specified'} </b>
             </div>
             <div>
               <p className="text-slate-500">Shaft</p>
@@ -1502,7 +1699,7 @@ const CustomerProjectView = ({
 };
 
 /* ------------------------------------------------------------------
-   MANUFACTURER FLOW – LEADS + PRODUCT MASTER
+   MANUFACTURER FLOW – LEADS + PRODUCT MASTER WITH MASKED NAMES
 -------------------------------------------------------------------*/
 
 const LeadsMarketplace = ({ projects, user, onSubmitQuote, products }) => {
@@ -1513,6 +1710,7 @@ const LeadsMarketplace = ({ projects, user, onSubmitQuote, products }) => {
     productId: ''
   });
 
+  // Manufacturers see projects that are broadcast / quoting / survey
   const leads = projects.filter((p) => p.stage >= 3 && p.stage <= 5);
 
   const submit = () => {
@@ -1558,9 +1756,17 @@ const LeadsMarketplace = ({ projects, user, onSubmitQuote, products }) => {
           >
             ← Back to Leads
           </button>
-          <h3 className="text-xl font-bold mb-4">
-            Quote for: {selectedLead.name}
+          <h3 className="text-xl font-bold mb-1">
+            Quote for:{' '}
+            {selectedLead.awardedMfrId === user.id &&
+            selectedLead.stage >= 5
+              ? selectedLead.name // private revealed only to awarded mfr after stage 5
+              : selectedLead.publicLabel || 'Lift4M Project'}
           </h3>
+          <p className="text-[11px] text-slate-500 mb-4">
+            Project name is masked until Lift4M and the customer award the
+            order to you (post Stage 5).
+          </p>
 
           <div className="grid grid-cols-2 gap-4 mb-6 text-sm bg-slate-50 p-4 rounded">
             <div>
@@ -1699,28 +1905,37 @@ const LeadsMarketplace = ({ projects, user, onSubmitQuote, products }) => {
               No active leads currently available.
             </div>
           )}
-          {leads.map((p) => (
-            <div
-              key={p.id}
-              className="bg-white p-5 rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition"
-            >
-              <div className="flex justify-between mb-2">
-                <StatusBadge status={p.status} />
-                <span className="text-xs text-slate-400">#{p.id}</span>
-              </div>
-              <h3 className="font-bold text-lg mb-1">{p.name}</h3>
-              <p className="text-sm text-slate-500 mb-4">
-                {p.location} • {p.floors} Floors • Prefers{' '}
-                {p.drivePreference || 'Any Drive'}
-              </p>
-              <button
-                onClick={() => setSelectedLead(p)}
-                className="w-full bg-slate-900 text-white py-2 rounded text-sm font-bold hover:bg-slate-800"
+          {leads.map((p) => {
+            const nameForMfr =
+              p.awardedMfrId === user.id && p.stage >= 5
+                ? p.name
+                : p.publicLabel || 'Lift4M Project';
+            return (
+              <div
+                key={p.id}
+                className="bg-white p-5 rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition"
               >
-                View &amp; Quote
-              </button>
-            </div>
-          ))}
+                <div className="flex justify-between mb-2">
+                  <StatusBadge status={p.status} />
+                  <span className="text-xs text-slate-400">#{p.id}</span>
+                </div>
+                <h3 className="font-bold text-lg mb-1">{nameForMfr}</h3>
+                <p className="text-xs text-slate-400 mb-1">
+                  Internal name is masked until award.
+                </p>
+                <p className="text-sm text-slate-500 mb-4">
+                  {p.location} • {p.floors} Floors • Prefers{' '}
+                  {p.drivePreference || 'Any Drive'}
+                </p>
+                <button
+                  onClick={() => setSelectedLead(p)}
+                  className="w-full bg-slate-900 text-white py-2 rounded text-sm font-bold hover:bg-slate-800"
+                >
+                  View &amp; Quote
+                </button>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
@@ -2033,11 +2248,18 @@ export default function App() {
 
   const handleCreateProject = (data) => {
     if (!user) return;
+    const privateName =
+      data.projectName || `${data.type || 'Lift'} Project ${Date.now()}`;
+    const publicLabel = `${data.type || 'Lift'} • ${
+      data.location || 'Location TBD'
+    }`;
+
     const newProject = {
       id: `PRJ-${Math.floor(1000 + Math.random() * 9000)}`,
-      name: `${data.type || 'Lift'} Project`,
-      stage: 2,
-      status: 'Requirements Submitted',
+      name: privateName, // internal name
+      publicLabel, // what manufacturers see until award
+      stage: 3, // Immediately at Lead Broadcast so manufacturers see leads
+      status: 'Bidding',
       type: data.type,
       client: user.name,
       floors: data.floors,
@@ -2047,12 +2269,20 @@ export default function App() {
       pitDepth: data.pitDepth,
       headroom: data.headroom,
       drivePreference: data.drivePreference,
+      awardedMfrId: null,
       auditLogs: [
+        {
+          id: Date.now() + 1,
+          action:
+            'Stages 1–2 completed: onboarding & requirement capture (project details + shaft dimensions).',
+          user: user.name,
+          timestamp: new Date().toLocaleString()
+        },
         {
           id: Date.now(),
           action:
-            'Project Created with initial requirements & shaft dimensions (Stages 1–2)',
-          user: user.name,
+            'Lead broadcast to verified manufacturer pool (Stage 3) – project open for bids.',
+          user: 'System',
           timestamp: new Date().toLocaleString()
         }
       ]
@@ -2079,13 +2309,6 @@ export default function App() {
               status: 'Action Required',
               auditLogs: [
                 {
-                  id: Date.now() + 1,
-                  action:
-                    'Lead broadcast to verified manufacturer pool (Stage 3) & Top 3 ranking in progress (Stage 4)',
-                  user: 'System',
-                  timestamp: new Date().toLocaleString()
-                },
-                {
                   id: Date.now(),
                   action: `Quote Received from ${quoteData.mfrName}`,
                   user: 'System',
@@ -2101,8 +2324,10 @@ export default function App() {
     setView('dashboard');
   };
 
-  // Customer selects quote -> Stage 5 (survey) in new flow
+  // Customer selects quote -> Stage 5 (survey) & award manufacturer
   const handleSelectQuote = (projectId, quoteId) => {
+    const chosenQuote = quotes.find((q) => q.id === quoteId);
+
     setQuotes((prev) =>
       prev.map((q) =>
         q.id === quoteId
@@ -2120,11 +2345,12 @@ export default function App() {
               ...p,
               stage: 5,
               status: 'Survey Scheduled',
+              awardedMfrId: chosenQuote ? chosenQuote.mfrId : null,
               auditLogs: [
                 {
                   id: Date.now(),
                   action:
-                    'Customer shortlisted manufacturer; Lift4M survey scheduled (Stage 5)',
+                    'Customer shortlisted manufacturer; Lift4M survey scheduled (Stage 5).',
                   user: user?.name || 'Customer',
                   timestamp: new Date().toLocaleString()
                 },
@@ -2148,11 +2374,11 @@ export default function App() {
         let actionText = '';
 
         switch (p.stage) {
-          case 2:
-            nextStage = 3;
-            status = 'Bidding';
+          case 3:
+            nextStage = 4;
+            status = 'Action Required';
             actionText =
-              'Requirements finalized; broadcasting opportunity to verified manufacturers (Stage 3).';
+              'Admin / system confirmed enough quotes; AI ranking & Top 3 presentation (Stage 4).';
             break;
           case 4:
             nextStage = 5;
@@ -2239,6 +2465,7 @@ export default function App() {
           quotes={quotes}
           mfrRatings={mfrRatings}
           setMfrRatings={setMfrRatings}
+          setProjects={setProjects}
         />
       );
     }
