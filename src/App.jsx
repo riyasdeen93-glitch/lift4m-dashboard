@@ -15,7 +15,8 @@ import {
   BarChart3,
   Plus,
   ArrowLeft,
-  LogOut
+  LogOut,
+  Star
 } from 'lucide-react';
 
 /* ------------------------------------------------------------------
@@ -40,7 +41,7 @@ const SAMPLE_CREDENTIALS = [
 ];
 
 /* ------------------------------------------------------------------
-   10-STAGE BACKBONE + META
+   10-STAGE BACKBONE (UPDATED: SURVEY AFTER TOP-3 QUOTES)
 -------------------------------------------------------------------*/
 
 const CORE_STAGES = [
@@ -62,27 +63,27 @@ const CORE_STAGES = [
   },
   {
     id: 3,
-    key: 'feasibility',
-    title: 'Stage 3 — Verified Survey & Feasibility Report',
-    shortLabel: 'Survey & Feasibility',
-    platformLabel: 'Survey Completed • Feasibility Passed',
-    icon: <FileCheck size={16} />
-  },
-  {
-    id: 4,
     key: 'broadcast',
-    title: 'Stage 4 — Lead Broadcast to Verified Manufacturer Pool',
+    title: 'Stage 3 — Lead Broadcast to Verified Manufacturer Pool',
     shortLabel: 'Lead Broadcast',
     platformLabel: 'Lead Broadcast to Manufacturers',
     icon: <Users size={16} />
   },
   {
-    id: 5,
-    key: 'ranking',
-    title: 'Stage 5 — AI Ranking & Top 3 Quote Presentation',
+    id: 4,
+    key: 'top3',
+    title: 'Stage 4 — AI Ranking & Top 3 Quote Presentation',
     shortLabel: 'Top 3 Quotes',
     platformLabel: 'Top 3 Quotes Ready',
     icon: <BarChart3 size={16} />
+  },
+  {
+    id: 5,
+    key: 'survey',
+    title: 'Stage 5 — Verified Survey & Feasibility Report (Lift4M)',
+    shortLabel: 'Survey & Feasibility',
+    platformLabel: 'Survey Completed • Feasibility Passed',
+    icon: <FileCheck size={16} />
   },
   {
     id: 6,
@@ -135,47 +136,55 @@ const STAGE_META = {
       'Rule-based prompts to check 3-phase power feasibility.',
       'Pre-warning about regulatory / licensing requirements.'
     ],
-    whatsNext: 'Move to Stage 2 to capture measurements or upload drawings.'
+    whatsNext: 'Move to Stage 2 to capture shaft dimensions or upload drawings.'
   },
   2: {
-    objective: 'Capture all technical requirements and any existing data the customer has.',
+    objective:
+      'Capture all technical requirements and any existing data the customer has, including shaft geometry and power constraints.',
     keyPoints: [
-      'Customer enters shaft measurements OR uploads floor plans.',
+      'Customer enters shaft width/depth, pit depth, headroom height, or uploads floor plans.',
+      'Guided explanation with 2D visuals for shaft, pit and headroom so non-technical users understand what to measure.',
       'Upload photos, videos, voice notes for context.',
-      'Placeholder for AI: auto-extract shaft dimensions from drawings.',
-      'If measurements are missing, customer can request a GPS-verified site survey.'
+      'Placeholder for AI: auto-extract shaft dimensions from drawings.'
     ],
-    whatsNext: 'Lift4M or partner conducts survey and prepares feasibility (Stage 3).'
+    whatsNext:
+      'Once initial data looks reasonable, broadcast the requirement to the verified manufacturer pool (Stage 3).'
   },
   3: {
-    objective: 'Convert raw measurements into a trusted feasibility report for all parties.',
+    objective:
+      'Share a standardized opportunity with the right manufacturer pool using the initial data from the customer.',
     keyPoints: [
-      'Technician captures shaft / pit / headroom, power and structural constraints.',
-      'Checks electrical readiness and power backup feasibility.',
-      'Assigns risk grading (Green / Amber / Red).',
-      'Photos, measurements and timestamps appear in the customer dashboard.'
-    ],
-    whatsNext: 'Once feasibility is Green/Amber, broadcast the opportunity to manufacturers (Stage 4).'
-  },
-  4: {
-    objective: 'Share a verified, standardized opportunity with the right manufacturer pool.',
-    keyPoints: [
-      'Broadcast only to verified, onboarded manufacturers.',
-      'Manufacturers see standardized technical sheet and constraints.',
+      'Broadcast only to verified, onboarded manufacturers based on geography & capacity.',
+      'Manufacturers see standardized technical sheet and constraints based on customer inputs.',
       'Proposals must comply with IS 17900-1 & 17900-2 and transparent cost breakup.',
       'Warranty expectations and lead time window are clearly defined.'
     ],
-    whatsNext: 'Manufacturers submit proposals; AI prepares Top 3 options (Stage 5).'
+    whatsNext:
+      'Manufacturers submit proposals; AI prepares Top 3 best-fit options for the builder (Stage 4).'
+  },
+  4: {
+    objective:
+      'Help the customer decide quickly without being overwhelmed, before committing to a detailed physical survey.',
+    keyPoints: [
+      'Algorithm ranks proposals on Lift4M-controlled rating, lead time, warranty & total cost of ownership.',
+      'AMC charges and emergency response SLAs get extra weight.',
+      'Customer sees only the Top 3 in a clean comparison table including drive type and key specs.',
+      'Hidden-cost checks flag surprises and non-compliant proposals.'
+    ],
+    whatsNext:
+      'Once a preferred option is shortlisted, schedule Lift4M survey for parameter validation (Stage 5).'
   },
   5: {
-    objective: 'Help the customer decide quickly without being overwhelmed.',
+    objective:
+      'Lift4M-authorised technician validates all inputs before contract, protecting both customer and manufacturer.',
     keyPoints: [
-      'Algorithm ranks proposals on reliability, lead time, warranty & total cost of ownership.',
-      'AMC charges and emergency response SLAs get extra weight.',
-      'Customer sees only the Top 3 in a clean comparison table.',
-      'Hidden-cost checks flag surprises.'
+      'Confirm shaft / pit / headroom dimensions versus manufacturer proposal.',
+      'Check structural constraints and power backup feasibility.',
+      'Verify electrical readiness (main failure point in many homes).',
+      'Capture photos, GPS/time-stamped measurements and assign risk grading (Green / Amber / Red).'
     ],
-    whatsNext: 'Customer selects one proposal, triggering tri-party contract drafting (Stage 6).'
+    whatsNext:
+      'After survey approval by Lift4M Super Admin, proceed to tri-party contract and escrow payments (Stage 6).'
   },
   6: {
     objective: 'Convert the chosen proposal into a trusted, tri-party agreement.',
@@ -195,7 +204,8 @@ const STAGE_META = {
       'Lift license documentation (Form A/C/F) can be assisted and tracked.',
       'Automated reminders nudge stakeholders when approvals are pending.'
     ],
-    whatsNext: 'When GAD is approved and first payment is cleared, production starts (Stage 8).'
+    whatsNext:
+      'When GAD is approved and first payment is cleared, production starts (Stage 8).'
   },
   8: {
     objective: 'Ensure production and site are both ready before material moves.',
@@ -215,7 +225,8 @@ const STAGE_META = {
       'Lift4M approval is required before moving to the next gate.',
       'Commissioning includes load test, safety circuits and ARD test.'
     ],
-    whatsNext: 'After commissioning, move to handover & lifetime support (Stage 10).'
+    whatsNext:
+      'After commissioning, move to handover & lifetime support (Stage 10).'
   },
   10: {
     objective: 'Complete the project and set up long-term service & AMC visibility.',
@@ -230,15 +241,90 @@ const STAGE_META = {
 };
 
 /* ------------------------------------------------------------------
-   PRODUCTS (SEED INVENTORY)
+   INITIAL PRODUCT MASTER (RICH SPEC)
 -------------------------------------------------------------------*/
 
 const INITIAL_PRODUCTS = [
-  { id: 'p1', mfrId: 'mfr-a', name: 'Alpha Glide 3000', type: 'Passenger', capacity: '6 Persons', price: 1200000 },
-  { id: 'p2', mfrId: 'mfr-b', name: 'Beta Max Load', type: 'Freight', capacity: '2000 kg', price: 1800000 },
-  { id: 'p3', mfrId: 'mfr-c', name: 'Gamma Eco Home', type: 'Home Lift', capacity: '4 Persons', price: 950000 },
-  { id: 'p4', mfrId: 'mfr-d', name: 'Delta High Speed', type: 'Passenger', capacity: '10 Persons', price: 2200000 }
+  {
+    id: 'p1',
+    mfrId: 'mfr-a',
+    name: 'Alpha Glide 3000',
+    liftType: 'Passenger',
+    driveType: 'MRL Traction',
+    capacity: '6 persons / 408 kg',
+    speed: '1.0 m/s',
+    stopsRange: 'G+7',
+    doorType: 'Automatic centre opening',
+    machineRoom: 'MRL (machine-room-less)',
+    pitRequired: '1500 mm',
+    headroomRequired: '4500 mm',
+    basePrice: 1200000,
+    warrantyYears: 2,
+    usp: 'Reliable mid-rise passenger solution with low energy use.'
+  },
+  {
+    id: 'p2',
+    mfrId: 'mfr-b',
+    name: 'Beta Max Load',
+    liftType: 'Freight',
+    driveType: 'Traction',
+    capacity: '2000 kg',
+    speed: '0.5 m/s',
+    stopsRange: 'G+3',
+    doorType: 'Manual swing / vertical bi-parting',
+    machineRoom: 'Machine room on top',
+    pitRequired: '1600 mm',
+    headroomRequired: '4700 mm',
+    basePrice: 1800000,
+    warrantyYears: 1,
+    usp: 'Heavy-duty freight lift built for warehouses.'
+  },
+  {
+    id: 'p3',
+    mfrId: 'mfr-c',
+    name: 'Gamma Eco Home',
+    liftType: 'Home Lift',
+    driveType: 'Hydraulic',
+    capacity: '4 persons / 320 kg',
+    speed: '0.3 m/s',
+    stopsRange: 'G+3',
+    doorType: 'Swing or automatic telescopic',
+    machineRoom: 'Compact machine room',
+    pitRequired: '200 mm',
+    headroomRequired: '2600 mm',
+    basePrice: 950000,
+    warrantyYears: 2,
+    usp: 'Low pit & headroom – ideal for villas and retrofits.'
+  },
+  {
+    id: 'p4',
+    mfrId: 'mfr-d',
+    name: 'Delta High Speed',
+    liftType: 'Passenger',
+    driveType: 'Gearless Traction',
+    capacity: '10 persons / 680 kg',
+    speed: '1.75 m/s',
+    stopsRange: 'G+15',
+    doorType: 'Automatic centre opening',
+    machineRoom: 'MRL',
+    pitRequired: '1700 mm',
+    headroomRequired: '5000 mm',
+    basePrice: 2200000,
+    warrantyYears: 3,
+    usp: 'Premium high-rise passenger lift with smooth ride.'
+  }
 ];
+
+/* ------------------------------------------------------------------
+   LIFT4M RATING (SUPER ADMIN CONTROLLED)
+-------------------------------------------------------------------*/
+
+const INITIAL_MFR_RATINGS = {
+  'mfr-a': { id: 'mfr-a', name: 'Alpha Lifts', score: 4.4, totalReviews: 112 },
+  'mfr-b': { id: 'mfr-b', name: 'Beta Elevators', score: 4.1, totalReviews: 87 },
+  'mfr-c': { id: 'mfr-c', name: 'Gamma Corp', score: 4.6, totalReviews: 65 },
+  'mfr-d': { id: 'mfr-d', name: 'Delta Lifts', score: 4.3, totalReviews: 54 }
+};
 
 /* ------------------------------------------------------------------
    HELPERS
@@ -250,6 +336,39 @@ const formatINR = (val) =>
     currency: 'INR',
     maximumFractionDigits: 0
   }).format(val);
+
+const RatingBadge = ({ score, totalReviews }) => {
+  if (!score) return null;
+  const fullStars = Math.floor(score);
+  const halfStar = score - fullStars >= 0.5;
+  const stars = [];
+  for (let i = 0; i < fullStars; i++) stars.push('full');
+  if (halfStar) stars.push('half');
+  while (stars.length < 5) stars.push('empty');
+
+  return (
+    <div className="inline-flex items-center gap-1 text-[11px] bg-amber-50 text-amber-700 px-2 py-1 rounded-full">
+      <div className="flex">
+        {stars.map((s, idx) => (
+          <Star
+            key={idx}
+            size={12}
+            className={
+              s === 'empty'
+                ? 'text-slate-300'
+                : s === 'half'
+                ? 'text-amber-400 opacity-70'
+                : 'text-amber-500'
+            }
+            fill={s === 'empty' ? 'none' : 'currentColor'}
+          />
+        ))}
+      </div>
+      <span className="font-semibold">{score.toFixed(1)}</span>
+      <span className="text-slate-400">• {totalReviews} Google reviews</span>
+    </div>
+  );
+};
 
 /* ------------------------------------------------------------------
    REUSABLE UI PIECES
@@ -355,6 +474,67 @@ const StageInfoPanel = ({ stageNumber }) => {
 };
 
 /* ------------------------------------------------------------------
+   SIMPLE 2D SHAFT DIAGRAM (EDUCATIONAL)
+-------------------------------------------------------------------*/
+
+const ShaftDiagram = () => (
+  <div className="mt-4 bg-slate-50 border border-slate-200 rounded-lg p-4 text-[11px] text-slate-600">
+    <p className="font-semibold mb-2">How to read the lift shaft dimensions</p>
+    <div className="flex flex-col md:flex-row gap-4 items-center">
+      {/* diagram box */}
+      <div className="relative w-56 h-40 bg-white border border-slate-300 rounded">
+        {/* shaft outline */}
+        <div className="absolute inset-6 border border-emerald-400 rounded-sm">
+          <span className="absolute inset-x-0 -top-4 text-center text-[10px]">
+            Shaft (internal clear size)
+          </span>
+        </div>
+        {/* width arrow */}
+        <div className="absolute left-8 right-8 bottom-4 h-0.5 bg-slate-300">
+          <div className="absolute -left-1 -top-1 w-2 h-2 border-l border-t border-slate-400 rotate-45" />
+          <div className="absolute -right-1 -top-1 w-2 h-2 border-r border-b border-slate-400 rotate-45" />
+          <span className="absolute left-1/2 -translate-x-1/2 -top-4">
+            Width (mm)
+          </span>
+        </div>
+        {/* depth arrow */}
+        <div className="absolute top-8 bottom-8 right-4 w-0.5 bg-slate-300">
+          <div className="absolute -top-1 -right-1 w-2 h-2 border-t border-r border-slate-400 rotate-45" />
+          <div className="absolute -bottom-1 -right-1 w-2 h-2 border-b border-l border-slate-400 rotate-45" />
+          <span className="absolute -right-16 top-1/2 -translate-y-1/2">
+            Depth (mm)
+          </span>
+        </div>
+        {/* pit & headroom labels */}
+        <span className="absolute left-2 bottom-1">Pit depth ↓</span>
+        <span className="absolute left-2 top-1">Headroom height ↑</span>
+      </div>
+      {/* text help */}
+      <div className="flex-1 space-y-1">
+        <p>
+          <b>Shaft width</b> – clear distance between left and right wall inside
+          the lift shaft.
+        </p>
+        <p>
+          <b>Shaft depth</b> – clear distance from front door wall to back wall.
+        </p>
+        <p>
+          <b>Pit depth</b> – depth from finished floor level down to pit bottom.
+        </p>
+        <p>
+          <b>Headroom</b> – height from top landing floor level to structural
+          roof/beam above the lift.
+        </p>
+        <p className="text-[10px] text-slate-500">
+          Tip: Your architect/structural drawing will usually mark these as
+          “Lift Shaft” or “Elevator Shaft” with pit &amp; headroom notes.
+        </p>
+      </div>
+    </div>
+  </div>
+);
+
+/* ------------------------------------------------------------------
    LOGIN / AUTH
 -------------------------------------------------------------------*/
 
@@ -402,10 +582,10 @@ const LoginPage = ({ onLogin }) => (
 );
 
 /* ------------------------------------------------------------------
-   SUPER ADMIN DASHBOARD
+   SUPER ADMIN DASHBOARD (NOW CONTROLS RATINGS)
 -------------------------------------------------------------------*/
 
-const SuperAdminDashboard = ({ projects, quotes }) => {
+const SuperAdminDashboard = ({ projects, quotes, mfrRatings, setMfrRatings }) => {
   const [activeTab, setActiveTab] = useState('Overview');
   const [selectedProject, setSelectedProject] = useState(null);
 
@@ -426,6 +606,13 @@ const SuperAdminDashboard = ({ projects, quotes }) => {
       }))
     )
     .sort((a, b) => b.id - a.id);
+
+  const handleRatingChange = (id, newScore) => {
+    setMfrRatings((prev) => ({
+      ...prev,
+      [id]: { ...(prev[id] || {}), score: Number(newScore) }
+    }));
+  };
 
   if (selectedProject) {
     const projectQuotes = quotes.filter((q) => q.projectId === selectedProject.id);
@@ -504,10 +691,12 @@ const SuperAdminDashboard = ({ projects, quotes }) => {
     );
   }
 
+  const ratingList = Object.values(mfrRatings);
+
   return (
     <div className="space-y-6">
       <div className="flex gap-4 border-b border-slate-200">
-        {['Overview', 'Projects', 'Transactions'].map((t) => (
+        {['Overview', 'Projects', 'Transactions', 'Manufacturers'].map((t) => (
           <button
             key={t}
             onClick={() => setActiveTab(t)}
@@ -599,30 +788,38 @@ const SuperAdminDashboard = ({ projects, quotes }) => {
               </div>
             </div>
             <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm">
-              <h3 className="font-bold text-slate-800 mb-4">Manufacturer Leaderboard</h3>
+              <h3 className="font-bold text-slate-800 mb-4">
+                Manufacturer Leaderboard
+              </h3>
               <div className="space-y-3">
-                {['Alpha Lifts', 'Beta Elevators', 'Gamma Corp', 'Delta Lifts'].map(
-                  (mfr, i) => {
-                    const mfrQuotes = quotes.filter((q) => q.mfrName.includes(mfr));
-                    const wins = mfrQuotes.filter((q) => q.status === 'Accepted').length;
-                    return (
-                      <div
-                        key={i}
-                        className="flex justify-between items-center p-3 bg-slate-50 rounded"
-                      >
-                        <span className="font-medium text-sm">{mfr}</span>
-                        <div className="text-xs flex gap-3">
-                          <span className="text-slate-500">
-                            {mfrQuotes.length} Quotes
-                          </span>
-                          <span className="font-bold text-emerald-600">
-                            {wins} Wins
-                          </span>
-                        </div>
+                {ratingList.map((mfr) => {
+                  const mfrQuotes = quotes.filter((q) => q.mfrId === mfr.id);
+                  const wins = mfrQuotes.filter((q) => q.status === 'Accepted').length;
+                  return (
+                    <div
+                      key={mfr.id}
+                      className="flex justify-between items-center p-3 bg-slate-50 rounded"
+                    >
+                      <div>
+                        <span className="font-medium text-sm block">
+                          {mfr.name}
+                        </span>
+                        <RatingBadge
+                          score={mfr.score}
+                          totalReviews={mfr.totalReviews}
+                        />
                       </div>
-                    );
-                  }
-                )}
+                      <div className="text-xs flex flex-col items-end gap-1">
+                        <span className="text-slate-500">
+                          {mfrQuotes.length} Quotes
+                        </span>
+                        <span className="font-bold text-emerald-600">
+                          {wins} Wins
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -714,12 +911,59 @@ const SuperAdminDashboard = ({ projects, quotes }) => {
           </div>
         </div>
       )}
+
+      {activeTab === 'Manufacturers' && (
+        <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-6 space-y-4">
+          <h3 className="font-bold mb-4">Lift4M Rating Control</h3>
+          <p className="text-xs text-slate-500 mb-4">
+            These ratings are used in the AI ranking engine and shown to builders
+            during bidding. They can be derived from Google Reviews + internal
+            quality metrics.
+          </p>
+          <table className="w-full text-sm text-left">
+            <thead className="bg-slate-50 text-slate-500">
+              <tr>
+                <th className="p-2">Manufacturer</th>
+                <th className="p-2">Rating</th>
+                <th className="p-2">Google Reviews</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ratingList.map((mfr) => (
+                <tr key={mfr.id} className="border-t">
+                  <td className="p-2">{mfr.name}</td>
+                  <td className="p-2">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="1"
+                        max="5"
+                        step="0.1"
+                        value={mfr.score}
+                        onChange={(e) => handleRatingChange(mfr.id, e.target.value)}
+                        className="w-16 border rounded px-1 py-0.5 text-xs"
+                      />
+                      <RatingBadge
+                        score={mfr.score}
+                        totalReviews={mfr.totalReviews}
+                      />
+                    </div>
+                  </td>
+                  <td className="p-2 text-xs text-slate-500">
+                    {mfr.totalReviews} Google reviews
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };
 
 /* ------------------------------------------------------------------
-   CUSTOMER FLOW
+   CUSTOMER FLOW – RICH WIZARD WITH DRIVE TYPE & DIAGRAM
 -------------------------------------------------------------------*/
 
 const CustomerWizard = ({ onComplete }) => {
@@ -732,7 +976,11 @@ const CustomerWizard = ({ onComplete }) => {
     shaftAvailable: '',
     machineRoom: '',
     width: '',
-    depth: ''
+    depth: '',
+    pitDepth: '',
+    headroom: '',
+    drivePreference: '',
+    planFileName: ''
   });
 
   const update = (k, v) => setData((prev) => ({ ...prev, [k]: v }));
@@ -742,10 +990,10 @@ const CustomerWizard = ({ onComplete }) => {
     <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg border border-slate-200 p-8 my-8">
       <div className="flex justify-between items-center mb-6 border-b pb-4">
         <h2 className="font-bold text-lg">
-          Stage 1–2: Onboarding &amp; Requirement Capture
+          Stages 1–2: Onboarding, Selection Guide &amp; Measurement Capture
         </h2>
         <span className="text-xs bg-slate-100 px-2 py-1 rounded">
-          Step {step}/5
+          Step {step}/6
         </span>
       </div>
 
@@ -755,7 +1003,7 @@ const CustomerWizard = ({ onComplete }) => {
             What kind of building is this for?
           </h3>
           <p className="text-xs text-slate-500">
-            This helps us pick the right models, codes and AMC expectations.
+            This helps us pick the right lift family and safety codes.
           </p>
           <div className="grid grid-cols-2 gap-4">
             {['Residential', 'Stilt + 4', 'Apartment Block', 'Commercial'].map(
@@ -777,6 +1025,52 @@ const CustomerWizard = ({ onComplete }) => {
       )}
 
       {step === 2 && (
+        <div className="space-y-4">
+          <h3 className="font-semibold text-slate-800">
+            Elevator type &amp; drive preference
+          </h3>
+          <p className="text-xs text-slate-500">
+            A quick guide so manufacturers receive more precise requirements.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button
+              onClick={() => {
+                update('drivePreference', 'Pneumatic');
+                next();
+              }}
+              className="p-4 border rounded hover:border-emerald-500 text-left text-xs space-y-1"
+            >
+              <p className="font-semibold text-sm">Pneumatic / Vacuum</p>
+              <p>Ideal for small home lifts with minimal pit/headroom.</p>
+              <p>Typically lower capacity &amp; speed.</p>
+            </button>
+            <button
+              onClick={() => {
+                update('drivePreference', 'Hydraulic');
+                next();
+              }}
+              className="p-4 border rounded hover:border-emerald-500 text-left text-xs space-y-1"
+            >
+              <p className="font-semibold text-sm">Hydraulic</p>
+              <p>Good for villas &amp; low-rise, tolerant to low pit.</p>
+              <p>Oil-based system, usually 0.2–0.3 m/s.</p>
+            </button>
+            <button
+              onClick={() => {
+                update('drivePreference', 'Traction / MRL Traction');
+                next();
+              }}
+              className="p-4 border rounded hover:border-emerald-500 text-left text-xs space-y-1"
+            >
+              <p className="font-semibold text-sm">Traction / MRL</p>
+              <p>Standard for apartments &amp; commercial buildings.</p>
+              <p>Higher speed, best efficiency, needs deeper pit/headroom.</p>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === 3 && (
         <div className="space-y-4">
           <h3 className="font-semibold text-slate-800">
             Basic configuration &amp; location
@@ -803,7 +1097,7 @@ const CustomerWizard = ({ onComplete }) => {
         </div>
       )}
 
-      {step === 3 && (
+      {step === 4 && (
         <div className="space-y-4">
           <h3 className="font-semibold text-slate-800">
             Is a lift shaft already planned or constructed?
@@ -835,43 +1129,74 @@ const CustomerWizard = ({ onComplete }) => {
         </div>
       )}
 
-      {step === 4 && (
+      {step === 5 && (
         <div className="space-y-4">
           <h3 className="font-semibold text-slate-800">
-            Do you know the approximate shaft dimensions?
+            Shaft measurements &amp; drawings
           </h3>
           <p className="text-xs text-slate-500">
-            You can share rough values now and upload drawings later if needed.
+            Share whatever you have now. Lift4M will run a professional survey
+            later (Stage 5) before final contract.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
-              placeholder="Width (mm)"
+              placeholder="Shaft width (mm)"
               className="w-full border p-2 rounded text-sm"
               onChange={(e) => update('width', e.target.value)}
             />
             <input
-              placeholder="Depth (mm)"
+              placeholder="Shaft depth (mm)"
               className="w-full border p-2 rounded text-sm"
               onChange={(e) => update('depth', e.target.value)}
             />
+            <input
+              placeholder="Pit depth (mm)"
+              className="w-full border p-2 rounded text-sm"
+              onChange={(e) => update('pitDepth', e.target.value)}
+            />
+            <input
+              placeholder="Headroom height (mm)"
+              className="w-full border p-2 rounded text-sm"
+              onChange={(e) => update('headroom', e.target.value)}
+            />
           </div>
+          <div className="space-y-2 text-xs">
+            <label className="font-semibold">
+              Upload floor plan / lift shaft drawing (optional)
+            </label>
+            <input
+              type="file"
+              accept=".pdf,.png,.jpg,.jpeg"
+              className="text-xs"
+              onChange={(e) =>
+                update('planFileName', e.target.files?.[0]?.name || '')
+              }
+            />
+            {data.planFileName && (
+              <p className="text-[11px] text-slate-500">
+                Attached: {data.planFileName}
+              </p>
+            )}
+          </div>
+          <ShaftDiagram />
           <button
             onClick={next}
-            className="bg-emerald-600 text-white px-4 py-2 rounded text-sm"
+            className="bg-emerald-600 text-white px-4 py-2 rounded text-sm mt-4"
           >
             Next
           </button>
         </div>
       )}
 
-      {step === 5 && (
+      {step === 6 && (
         <div className="text-center space-y-4">
           <h3 className="text-xl font-bold mb-2">
             Ready to create your Lift4M project?
           </h3>
           <p className="text-xs text-slate-500 max-w-md mx-auto">
-            We’ll treat this as a verified requirement and broadcast it to our
-            manufacturer pool at Stage 4 after feasibility &amp; survey checks.
+            We’ll treat this as an initial requirement. Manufacturers will quote
+            based on these details (Stage 3–4), and Lift4M will physically verify
+            everything in Stage 5 before contract.
           </p>
           <button
             onClick={() => onComplete(data)}
@@ -885,12 +1210,17 @@ const CustomerWizard = ({ onComplete }) => {
   );
 };
 
+/* ------------------------------------------------------------------
+   CUSTOMER PROJECT VIEW – UPDATED STAGE FLOW & RATING VISIBILITY
+-------------------------------------------------------------------*/
+
 const CustomerProjectView = ({
   project,
   quotes,
   onBack,
   onSelectQuote,
-  onAdvanceStage
+  onAdvanceStage,
+  getRating
 }) => {
   const [tab, setTab] = useState('Overview');
   const projectQuotes = quotes.filter((q) => q.projectId === project.id);
@@ -899,15 +1229,21 @@ const CustomerProjectView = ({
     switch (project.stage) {
       case 2:
         return {
-          label: 'Request Site Survey (Move to Stage 3)',
+          label: 'Broadcast requirement to manufacturers (Stage 3)',
           description:
-            'Trigger a certified Lift4M technician visit to verify measurements and feasibility.'
+            'Once you are happy with the basic dimensions, push this opportunity to verified manufacturers.'
         };
-      case 3:
+      case 4:
         return {
-          label: 'Approve Feasibility & Broadcast Lead (Stage 4)',
+          label: 'Schedule Lift4M survey & feasibility (Stage 5)',
           description:
-            'Confirm feasibility report and push this opportunity to the verified manufacturer pool.'
+            'After reviewing Top 3 options, ask Lift4M to run a detailed site survey to validate shaft/pit/headroom and electrical readiness.'
+        };
+      case 5:
+        return {
+          label: 'Confirm survey approved & move to contract (Stage 6)',
+          description:
+            'Lift4M survey is complete and parameters are verified. Proceed to tri-party contract with the chosen manufacturer.'
         };
       case 6:
         return {
@@ -919,7 +1255,7 @@ const CustomerProjectView = ({
         return {
           label: 'Approve GAD & Move to Production (Stage 8)',
           description:
-            'All stakeholders have signed off on drawings — start production and pre-install readiness.'
+            'All stakeholders have signed off on drawings — start production and pre-installation readiness.'
         };
       case 8:
         return {
@@ -993,10 +1329,22 @@ const CustomerProjectView = ({
               <b>{project.floors}</b>
             </div>
             <div>
+              <p className="text-slate-500">Preferred drive</p>
+              <b>{project.drivePreference || 'Not specified'}</b>
+            </div>
+            <div>
               <p className="text-slate-500">Shaft</p>
               <b>
                 {project.width} x {project.depth} mm
               </b>
+            </div>
+            <div>
+              <p className="text-slate-500">Pit depth</p>
+              <b>{project.pitDepth || 'TBD'} mm</b>
+            </div>
+            <div>
+              <p className="text-slate-500">Headroom</p>
+              <b>{project.headroom || 'TBD'} mm</b>
             </div>
             <div>
               <p className="text-slate-500">Status</p>
@@ -1023,15 +1371,15 @@ const CustomerProjectView = ({
             </div>
           )}
 
-          {project.stage === 4 && projectQuotes.length > 0 && (
+          {project.stage >= 3 && projectQuotes.length > 0 && (
             <div className="mt-6 p-4 bg-blue-50 border border-blue-100 rounded-lg flex justify-between items-center">
               <div>
                 <p className="font-bold text-blue-800">
-                  Action Required: {projectQuotes.length} Quotes Received
+                  {projectQuotes.length} quotes received
                 </p>
                 <p className="text-xs text-blue-600">
-                  Please review proposals and select a manufacturer to move into
-                  tri-party contract.
+                  Review specifications, Lift4M rating and pricing before moving
+                  ahead.
                 </p>
               </div>
               <button
@@ -1056,58 +1404,95 @@ const CustomerProjectView = ({
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projectQuotes.map((q) => (
-                <div
-                  key={q.id}
-                  className="bg-white border-2 border-slate-100 rounded-xl p-5 hover:border-emerald-500 transition shadow-sm relative overflow-hidden"
-                >
-                  {q.status === 'Accepted' && (
-                    <div className="absolute top-0 right-0 bg-emerald-500 text-white text-xs px-3 py-1 rounded-bl-lg font-bold">
-                      SELECTED
+              {projectQuotes.map((q) => {
+                const rating = getRating ? getRating(q.mfrId) : null;
+                return (
+                  <div
+                    key={q.id}
+                    className="bg-white border-2 border-slate-100 rounded-xl p-5 hover:border-emerald-500 transition shadow-sm relative overflow-hidden"
+                  >
+                    {q.status === 'Accepted' && (
+                      <div className="absolute top-0 right-0 bg-emerald-500 text-white text-xs px-3 py-1 rounded-bl-lg font-bold">
+                        SELECTED
+                      </div>
+                    )}
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center font-bold text-slate-600">
+                          {q.mfrName[0]}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-bold text-slate-800">
+                          {formatINR(q.price)}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          Total Project Cost
+                        </p>
+                      </div>
                     </div>
-                  )}
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center font-bold text-slate-600">
-                      {q.mfrName[0]}
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-slate-800">
-                        {formatINR(q.price)}
+                    <h4 className="font-bold text-lg mb-1">{q.mfrName}</h4>
+                    {rating && (
+                      <div className="mb-2">
+                        <RatingBadge
+                          score={rating.score}
+                          totalReviews={rating.totalReviews}
+                        />
+                      </div>
+                    )}
+                    <div className="text-xs text-slate-600 mb-3 bg-slate-50 p-2 rounded space-y-1">
+                      <p>
+                        <b>Product:</b> {q.productName} ({q.liftType})
                       </p>
-                      <p className="text-xs text-slate-500">Total Project Cost</p>
+                      <p>
+                        <b>Drive:</b> {q.driveType}
+                      </p>
+                      <p>
+                        <b>Capacity:</b> {q.capacity} • <b>Speed:</b> {q.speed}
+                      </p>
+                      <p>
+                        <b>Stops:</b> {q.stopsRange} •{' '}
+                        <b>Door:</b> {q.doorType}
+                      </p>
+                      <p>
+                        <b>Machine Room:</b> {q.machineRoom}
+                      </p>
+                      <p>
+                        <b>Pit / Headroom needs:</b> {q.pitRequired} /{' '}
+                        {q.headroomRequired}
+                      </p>
+                      <p>
+                        <b>Warranty:</b> {q.warrantyYears} years (standard)
+                      </p>
+                      <p>
+                        <b>Lead Time:</b> {q.leadTime} weeks
+                      </p>
                     </div>
+                    {q.usp && (
+                      <p className="text-[11px] text-slate-500 italic mb-3">
+                        USP: {q.usp}
+                      </p>
+                    )}
+                    {project.stage === 4 ? (
+                      <div className="grid grid-cols-2 gap-2">
+                        <button className="border border-slate-300 text-slate-600 py-2 rounded text-sm font-bold">
+                          Ask Question
+                        </button>
+                        <button
+                          onClick={() => onSelectQuote(project.id, q.id)}
+                          className="bg-slate-900 text-white py-2 rounded text-sm font-bold hover:bg-emerald-600 transition"
+                        >
+                          Shortlist &amp; Trigger Survey
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="text-center text-sm text-slate-400 italic">
+                        Bidding Closed
+                      </div>
+                    )}
                   </div>
-                  <h4 className="font-bold text-lg mb-1">{q.mfrName}</h4>
-                  <div className="text-sm text-slate-600 mb-4 bg-slate-50 p-2 rounded">
-                    <p>
-                      <b>Product:</b> {q.productName}
-                    </p>
-                    <p>
-                      <b>Capacity:</b> {q.specs}
-                    </p>
-                    <p>
-                      <b>Lead Time:</b> {q.leadTime} Weeks
-                    </p>
-                  </div>
-                  {project.stage === 4 ? (
-                    <div className="grid grid-cols-2 gap-2">
-                      <button className="border border-slate-300 text-slate-600 py-2 rounded text-sm font-bold">
-                        Ask Question
-                      </button>
-                      <button
-                        onClick={() => onSelectQuote(project.id, q.id)}
-                        className="bg-slate-900 text-white py-2 rounded text-sm font-bold hover:bg-emerald-600 transition"
-                      >
-                        Select &amp; Close
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="text-center text-sm text-slate-400 italic">
-                      Bidding Closed
-                    </div>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -1117,7 +1502,7 @@ const CustomerProjectView = ({
 };
 
 /* ------------------------------------------------------------------
-   MANUFACTURER FLOW
+   MANUFACTURER FLOW – LEADS + PRODUCT MASTER
 -------------------------------------------------------------------*/
 
 const LeadsMarketplace = ({ projects, user, onSubmitQuote, products }) => {
@@ -1128,7 +1513,7 @@ const LeadsMarketplace = ({ projects, user, onSubmitQuote, products }) => {
     productId: ''
   });
 
-  const leads = projects.filter((p) => p.stage >= 2 && p.stage <= 4);
+  const leads = projects.filter((p) => p.stage >= 3 && p.stage <= 5);
 
   const submit = () => {
     const selectedProduct = products.find((p) => p.id === quoteForm.productId);
@@ -1140,11 +1525,24 @@ const LeadsMarketplace = ({ projects, user, onSubmitQuote, products }) => {
       leadTime: quoteForm.leadTime,
       productId: quoteForm.productId,
       productName: selectedProduct?.name || 'Custom',
-      specs: selectedProduct?.capacity || 'N/A'
+      liftType: selectedProduct?.liftType || 'Custom',
+      driveType: selectedProduct?.driveType || 'Custom',
+      capacity: selectedProduct?.capacity || 'N/A',
+      speed: selectedProduct?.speed || 'N/A',
+      stopsRange: selectedProduct?.stopsRange || 'N/A',
+      doorType: selectedProduct?.doorType || 'N/A',
+      machineRoom: selectedProduct?.machineRoom || 'N/A',
+      pitRequired: selectedProduct?.pitRequired || 'N/A',
+      headroomRequired: selectedProduct?.headroomRequired || 'N/A',
+      warrantyYears: selectedProduct?.warrantyYears || 1,
+      usp: selectedProduct?.usp || ''
     });
     setSelectedLead(null);
     setQuoteForm({ price: '', leadTime: '', productId: '' });
   };
+
+  const selectedProduct =
+    products.find((p) => p.id === quoteForm.productId) || null;
 
   return (
     <div className="space-y-6">
@@ -1153,7 +1551,7 @@ const LeadsMarketplace = ({ projects, user, onSubmitQuote, products }) => {
       </h2>
 
       {selectedLead ? (
-        <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-lg max-w-2xl mx-auto">
+        <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-lg max-w-3xl mx-auto">
           <button
             onClick={() => setSelectedLead(null)}
             className="text-sm text-slate-500 mb-4 hover:underline"
@@ -1170,26 +1568,31 @@ const LeadsMarketplace = ({ projects, user, onSubmitQuote, products }) => {
               <b>{selectedLead.floors}</b>
             </div>
             <div>
-              <span className="text-slate-500 block">Dims</span>
+              <span className="text-slate-500 block">Preferred drive</span>
+              <b>{selectedLead.drivePreference || 'Any'}</b>
+            </div>
+            <div>
+              <span className="text-slate-500 block">Shaft</span>
               <b>
-                {selectedLead.width}x{selectedLead.depth}
+                {selectedLead.width}x{selectedLead.depth} mm
               </b>
             </div>
             <div>
-              <span className="text-slate-500 block">Type</span>
-              <b>{selectedLead.type}</b>
-            </div>
-            <div>
-              <span className="text-slate-500 block">Location</span>
-              <b>{selectedLead.location}</b>
+              <span className="text-slate-500 block">Pit / Headroom</span>
+              <b>
+                {selectedLead.pitDepth || 'TBD'} /{' '}
+                {selectedLead.headroom || 'TBD'} mm
+              </b>
             </div>
           </div>
 
-          <h4 className="font-bold mb-3 border-b pb-2">Prepare Quotation</h4>
+          <h4 className="font-bold mb-3 border-b pb-2">
+            Prepare Quotation (with Product Master)
+          </h4>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-bold mb-1">
-                Select Product from Inventory
+                Select Product from Catalog
               </label>
               <select
                 className="w-full border p-2 rounded text-sm"
@@ -1203,15 +1606,53 @@ const LeadsMarketplace = ({ projects, user, onSubmitQuote, products }) => {
                   .filter((p) => p.mfrId === user.id)
                   .map((p) => (
                     <option key={p.id} value={p.id}>
-                      {p.name} ({p.type})
+                      {p.name} ({p.liftType}, {p.driveType})
                     </option>
                   ))}
               </select>
+              <p className="text-[11px] text-slate-500 mt-1">
+                If you don’t see a fit, create a new product under “Product
+                Catalog” in your sidebar and return here.
+              </p>
             </div>
+
+            {selectedProduct && (
+              <div className="bg-slate-50 border border-slate-200 rounded p-3 text-xs space-y-1">
+                <p>
+                  <b>Type:</b> {selectedProduct.liftType} •{' '}
+                  <b>Drive:</b> {selectedProduct.driveType}
+                </p>
+                <p>
+                  <b>Capacity:</b> {selectedProduct.capacity} •{' '}
+                  <b>Speed:</b> {selectedProduct.speed}
+                </p>
+                <p>
+                  <b>Stops:</b> {selectedProduct.stopsRange} •{' '}
+                  <b>Door:</b> {selectedProduct.doorType}
+                </p>
+                <p>
+                  <b>Machine Room:</b> {selectedProduct.machineRoom}
+                </p>
+                <p>
+                  <b>Pit / Headroom:</b> {selectedProduct.pitRequired} /{' '}
+                  {selectedProduct.headroomRequired}
+                </p>
+                <p>
+                  <b>Base Price (indicative):</b>{' '}
+                  {formatINR(selectedProduct.basePrice)}
+                </p>
+                {selectedProduct.usp && (
+                  <p>
+                    <b>USP:</b> {selectedProduct.usp}
+                  </p>
+                )}
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-bold mb-1">
-                  Your Price (INR)
+                  Quoted Price (INR)
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-2 text-slate-500">₹</span>
@@ -1234,7 +1675,10 @@ const LeadsMarketplace = ({ projects, user, onSubmitQuote, products }) => {
                   className="w-full border p-2 rounded text-sm"
                   value={quoteForm.leadTime}
                   onChange={(e) =>
-                    setQuoteForm((prev) => ({ ...prev, leadTime: e.target.value }))
+                    setQuoteForm((prev) => ({
+                      ...prev,
+                      leadTime: e.target.value
+                    }))
                   }
                 />
               </div>
@@ -1244,7 +1688,7 @@ const LeadsMarketplace = ({ projects, user, onSubmitQuote, products }) => {
               disabled={!quoteForm.productId || !quoteForm.price}
               className="w-full bg-emerald-600 text-white py-3 rounded font-bold hover:bg-emerald-700 disabled:bg-slate-300 text-sm"
             >
-              Submit Quote
+              Submit Detailed Quote
             </button>
           </div>
         </div>
@@ -1266,7 +1710,8 @@ const LeadsMarketplace = ({ projects, user, onSubmitQuote, products }) => {
               </div>
               <h3 className="font-bold text-lg mb-1">{p.name}</h3>
               <p className="text-sm text-slate-500 mb-4">
-                {p.location} • {p.floors} Floors
+                {p.location} • {p.floors} Floors • Prefers{' '}
+                {p.drivePreference || 'Any Drive'}
               </p>
               <button
                 onClick={() => setSelectedLead(p)}
@@ -1282,6 +1727,209 @@ const LeadsMarketplace = ({ projects, user, onSubmitQuote, products }) => {
   );
 };
 
+/* PRODUCT CATALOG FOR MANUFACTURERS */
+
+const ProductCatalog = ({ user, products, onAddProduct }) => {
+  const myProducts = products.filter((p) => p.mfrId === user.id);
+  const [form, setForm] = useState({
+    name: '',
+    liftType: 'Passenger',
+    driveType: 'Traction',
+    capacity: '',
+    speed: '',
+    stopsRange: '',
+    doorType: '',
+    machineRoom: '',
+    pitRequired: '',
+    headroomRequired: '',
+    basePrice: '',
+    warrantyYears: 1,
+    usp: ''
+  });
+
+  const update = (k, v) => setForm((prev) => ({ ...prev, [k]: v }));
+
+  const addProduct = () => {
+    onAddProduct({
+      ...form,
+      basePrice: Number(form.basePrice) || 0,
+      warrantyYears: Number(form.warrantyYears) || 1
+    });
+    setForm({
+      name: '',
+      liftType: 'Passenger',
+      driveType: 'Traction',
+      capacity: '',
+      speed: '',
+      stopsRange: '',
+      doorType: '',
+      machineRoom: '',
+      pitRequired: '',
+      headroomRequired: '',
+      basePrice: '',
+      warrantyYears: 1,
+      usp: ''
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-xl font-bold">Product Catalog</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white border rounded-lg p-5 shadow-sm">
+          <h3 className="font-bold mb-3">Create Product Template</h3>
+          <div className="space-y-3 text-xs">
+            <input
+              className="w-full border p-2 rounded"
+              placeholder="Product Name"
+              value={form.name}
+              onChange={(e) => update('name', e.target.value)}
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <select
+                className="border p-2 rounded"
+                value={form.liftType}
+                onChange={(e) => update('liftType', e.target.value)}
+              >
+                <option>Passenger</option>
+                <option>Home Lift</option>
+                <option>Freight</option>
+                <option>Hospital / Bed</option>
+              </select>
+              <select
+                className="border p-2 rounded"
+                value={form.driveType}
+                onChange={(e) => update('driveType', e.target.value)}
+              >
+                <option>Traction</option>
+                <option>MRL Traction</option>
+                <option>Hydraulic</option>
+                <option>Pneumatic</option>
+              </select>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                className="border p-2 rounded"
+                placeholder="Capacity (e.g., 6 persons / 408 kg)"
+                value={form.capacity}
+                onChange={(e) => update('capacity', e.target.value)}
+              />
+              <input
+                className="border p-2 rounded"
+                placeholder="Speed (e.g., 1.0 m/s)"
+                value={form.speed}
+                onChange={(e) => update('speed', e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                className="border p-2 rounded"
+                placeholder="Stops range (e.g., G+7)"
+                value={form.stopsRange}
+                onChange={(e) => update('stopsRange', e.target.value)}
+              />
+              <input
+                className="border p-2 rounded"
+                placeholder="Door type"
+                value={form.doorType}
+                onChange={(e) => update('doorType', e.target.value)}
+              />
+            </div>
+            <input
+              className="border p-2 rounded"
+              placeholder="Machine room details"
+              value={form.machineRoom}
+              onChange={(e) => update('machineRoom', e.target.value)}
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                className="border p-2 rounded"
+                placeholder="Pit required (mm)"
+                value={form.pitRequired}
+                onChange={(e) => update('pitRequired', e.target.value)}
+              />
+              <input
+                className="border p-2 rounded"
+                placeholder="Headroom required (mm)"
+                value={form.headroomRequired}
+                onChange={(e) => update('headroomRequired', e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                className="border p-2 rounded"
+                placeholder="Base price (INR)"
+                type="number"
+                value={form.basePrice}
+                onChange={(e) => update('basePrice', e.target.value)}
+              />
+              <input
+                className="border p-2 rounded"
+                placeholder="Warranty years"
+                type="number"
+                value={form.warrantyYears}
+                onChange={(e) => update('warrantyYears', e.target.value)}
+              />
+            </div>
+            <textarea
+              className="w-full border p-2 rounded"
+              placeholder="USP / Differentiator (short one-liner)"
+              rows={2}
+              value={form.usp}
+              onChange={(e) => update('usp', e.target.value)}
+            />
+            <button
+              onClick={addProduct}
+              disabled={!form.name}
+              className="w-full bg-emerald-600 text-white py-2 rounded text-xs font-bold disabled:bg-slate-300"
+            >
+              Save Product Template
+            </button>
+          </div>
+        </div>
+        <div className="bg-white border rounded-lg p-5 shadow-sm">
+          <h3 className="font-bold mb-3">My Templates</h3>
+          {myProducts.length === 0 ? (
+            <p className="text-xs text-slate-500">
+              No products yet. Create a template on the left and it will appear
+              here for re-use in quotes.
+            </p>
+          ) : (
+            <div className="space-y-3 text-xs">
+              {myProducts.map((p) => (
+                <div
+                  key={p.id}
+                  className="border border-slate-100 rounded p-3 bg-slate-50"
+                >
+                  <p className="font-semibold text-slate-800">{p.name}</p>
+                  <p className="text-slate-600">
+                    {p.liftType} • {p.driveType} • {p.capacity}
+                  </p>
+                  <p className="text-slate-500">
+                    {p.stopsRange} • {p.doorType}
+                  </p>
+                  <p className="text-slate-500">
+                    Pit {p.pitRequired}, Headroom {p.headroomRequired}
+                  </p>
+                  <p className="text-slate-500">
+                    Warranty {p.warrantyYears} yrs • Base{' '}
+                    {formatINR(p.basePrice)}
+                  </p>
+                  {p.usp && (
+                    <p className="text-[11px] text-slate-500 italic mt-1">
+                      {p.usp}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ManufacturerDashboard = ({ quotes, user, setView }) => {
   const myQuotes = quotes.filter((q) => q.mfrId === user.id);
   const pending = myQuotes.filter((q) => q.status === 'Submitted').length;
@@ -1289,7 +1937,7 @@ const ManufacturerDashboard = ({ quotes, user, setView }) => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div
           onClick={() => setView('leads')}
           className="bg-white p-6 rounded border shadow-sm cursor-pointer hover:border-emerald-500 group"
@@ -1305,6 +1953,17 @@ const ManufacturerDashboard = ({ quotes, user, setView }) => {
           </div>
           <p className="text-xs text-slate-400 mt-2">
             Click to view Leads Marketplace
+          </p>
+        </div>
+        <div
+          onClick={() => setView('products')}
+          className="bg-white p-6 rounded border shadow-sm cursor-pointer hover:border-emerald-500 group"
+        >
+          <h3 className="font-bold text-lg mb-2 text-slate-700 group-hover:text-emerald-600">
+            Product Catalog
+          </h3>
+          <p className="text-sm text-slate-600">
+            Create product templates once and auto-fill quote responses.
           </p>
         </div>
         <div className="bg-white p-6 rounded border shadow-sm">
@@ -1363,7 +2022,8 @@ export default function App() {
 
   const [projects, setProjects] = useState([]);
   const [quotes, setQuotes] = useState([]);
-  const [products] = useState(INITIAL_PRODUCTS);
+  const [products, setProducts] = useState(INITIAL_PRODUCTS);
+  const [mfrRatings, setMfrRatings] = useState(INITIAL_MFR_RATINGS);
 
   const handleLogin = (cred) => {
     setUser(cred);
@@ -1371,7 +2031,6 @@ export default function App() {
     setActiveProject(null);
   };
 
-  // Stage 2 – requirements captured
   const handleCreateProject = (data) => {
     if (!user) return;
     const newProject = {
@@ -1385,10 +2044,14 @@ export default function App() {
       location: data.location,
       width: data.width,
       depth: data.depth,
+      pitDepth: data.pitDepth,
+      headroom: data.headroom,
+      drivePreference: data.drivePreference,
       auditLogs: [
         {
           id: Date.now(),
-          action: 'Project Created & Requirements Captured (Stage 1–2)',
+          action:
+            'Project Created with initial requirements & shaft dimensions (Stages 1–2)',
           user: user.name,
           timestamp: new Date().toLocaleString()
         }
@@ -1398,7 +2061,6 @@ export default function App() {
     setView('dashboard');
   };
 
-  // Manufacturer submits quote → Stage 4 & broadcast log
   const handleQuoteSubmit = (quoteData) => {
     const newQuote = {
       id: `QT-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -1413,12 +2075,13 @@ export default function App() {
         p.id === quoteData.projectId
           ? {
               ...p,
-              stage: Math.max(p.stage, 4),
+              stage: Math.max(p.stage, 4), // move to Top-3 quotes stage
               status: 'Action Required',
               auditLogs: [
                 {
                   id: Date.now() + 1,
-                  action: 'Lead broadcast to verified manufacturer pool (Stage 4)',
+                  action:
+                    'Lead broadcast to verified manufacturer pool (Stage 3) & Top 3 ranking in progress (Stage 4)',
                   user: 'System',
                   timestamp: new Date().toLocaleString()
                 },
@@ -1438,7 +2101,7 @@ export default function App() {
     setView('dashboard');
   };
 
-  // Customer selects quote → Stage 6 (contract)
+  // Customer selects quote -> Stage 5 (survey) in new flow
   const handleSelectQuote = (projectId, quoteId) => {
     setQuotes((prev) =>
       prev.map((q) =>
@@ -1455,13 +2118,13 @@ export default function App() {
         p.id === projectId
           ? {
               ...p,
-              stage: 6,
-              status: 'Contract',
+              stage: 5,
+              status: 'Survey Scheduled',
               auditLogs: [
                 {
                   id: Date.now(),
                   action:
-                    'Customer selected manufacturer – tri-party contract initiated (Stage 6)',
+                    'Customer shortlisted manufacturer; Lift4M survey scheduled (Stage 5)',
                   user: user?.name || 'Customer',
                   timestamp: new Date().toLocaleString()
                 },
@@ -1475,7 +2138,6 @@ export default function App() {
     setActiveProject(null);
   };
 
-  // Generic stage advancement for CTA card
   const handleAdvanceStage = (projectId) => {
     setProjects((prev) =>
       prev.map((p) => {
@@ -1488,15 +2150,21 @@ export default function App() {
         switch (p.stage) {
           case 2:
             nextStage = 3;
-            status = 'Survey Scheduled';
-            actionText =
-              'Customer requested site survey; moving to Stage 3 (Survey & Feasibility).';
-            break;
-          case 3:
-            nextStage = 4;
             status = 'Bidding';
             actionText =
-              'Feasibility approved; broadcasting lead to verified manufacturers (Stage 4).';
+              'Requirements finalized; broadcasting opportunity to verified manufacturers (Stage 3).';
+            break;
+          case 4:
+            nextStage = 5;
+            status = 'Survey Scheduled';
+            actionText =
+              'Customer requested Lift4M survey & feasibility validation (Stage 5).';
+            break;
+          case 5:
+            nextStage = 6;
+            status = 'Contract';
+            actionText =
+              'Lift4M survey approved; moving to customer selection & tri-party contract (Stage 6).';
             break;
           case 6:
             nextStage = 7;
@@ -1544,6 +2212,19 @@ export default function App() {
     );
   };
 
+  const handleAddProduct = (productData) => {
+    setProducts((prev) => [
+      ...prev,
+      {
+        id: `prod-${Date.now()}`,
+        mfrId: user.id,
+        ...productData
+      }
+    ]);
+  };
+
+  const getRating = (mfrId) => mfrRatings[mfrId];
+
   const renderContent = () => {
     if (view === 'wizard') {
       return <CustomerWizard onComplete={handleCreateProject} />;
@@ -1552,7 +2233,14 @@ export default function App() {
     if (!user) return null;
 
     if (user.role === ROLES.ADMIN) {
-      return <SuperAdminDashboard projects={projects} quotes={quotes} />;
+      return (
+        <SuperAdminDashboard
+          projects={projects}
+          quotes={quotes}
+          mfrRatings={mfrRatings}
+          setMfrRatings={setMfrRatings}
+        />
+      );
     }
 
     if (user.role === ROLES.CUSTOMER) {
@@ -1564,6 +2252,7 @@ export default function App() {
             onBack={() => setActiveProject(null)}
             onSelectQuote={handleSelectQuote}
             onAdvanceStage={handleAdvanceStage}
+            getRating={getRating}
           />
         );
       }
@@ -1573,7 +2262,7 @@ export default function App() {
             <div>
               <h2 className="text-2xl font-bold">Welcome, {user.name}</h2>
               <p className="text-slate-500">
-                Stage 1–2: capture requirements, then track end-to-end.
+                Stages 1–2: capture requirements, then track end-to-end.
               </p>
             </div>
             <button
@@ -1613,7 +2302,7 @@ export default function App() {
                       </div>
                       <div className="text-right">
                         <StatusBadge status={p.status} />
-                        {p.stage >= 4 && count > 0 && (
+                        {p.stage >= 3 && count > 0 && (
                           <p className="text-xs text-blue-600 font-bold mt-1">
                             {count} Quotes Received
                           </p>
@@ -1640,12 +2329,20 @@ export default function App() {
           />
         );
       }
+      if (view === 'products') {
+        return (
+          <ProductCatalog
+            user={user}
+            products={products}
+            onAddProduct={handleAddProduct}
+          />
+        );
+      }
       return (
         <ManufacturerDashboard quotes={quotes} user={user} setView={setView} />
       );
     }
 
-    // Maintenance role placeholder
     return <div>Maintenance dashboard coming soon.</div>;
   };
 
@@ -1677,17 +2374,41 @@ export default function App() {
             >
               <LayoutDashboard size={18} /> Dashboard
             </button>
-            {user.role === ROLES.MANUFACTURER && (
+            {user.role === ROLES.CUSTOMER && (
               <button
-                onClick={() => setView('leads')}
+                onClick={() => setView('wizard')}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded transition ${
-                  view === 'leads'
+                  view === 'wizard'
                     ? 'bg-slate-800 text-white'
                     : 'hover:bg-slate-800'
                 }`}
               >
-                <Users size={18} /> Leads Marketplace
+                <Plus size={18} /> New Project
               </button>
+            )}
+            {user.role === ROLES.MANUFACTURER && (
+              <>
+                <button
+                  onClick={() => setView('leads')}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded transition ${
+                    view === 'leads'
+                      ? 'bg-slate-800 text-white'
+                      : 'hover:bg-slate-800'
+                  }`}
+                >
+                  <Users size={18} /> Leads Marketplace
+                </button>
+                <button
+                  onClick={() => setView('products')}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded transition ${
+                    view === 'products'
+                      ? 'bg-slate-800 text-white'
+                      : 'hover:bg-slate-800'
+                  }`}
+                >
+                  <Package size={18} /> Product Catalog
+                </button>
+              </>
             )}
           </nav>
         </div>
@@ -1710,7 +2431,7 @@ export default function App() {
         </div>
       </div>
       <main className="flex-1 md:ml-64 flex flex-col min-h-screen">
-        <header className="bg-white h-16 border-b border-slate-200 sticky top-0 z-10 flex items-center justify-between px-6 novidadeshadow-sm">
+        <header className="bg-white h-16 border-b border-slate-200 sticky top-0 z-10 flex items-center justify-between px-6 shadow-sm">
           <h2 className="text-lg font-bold text-slate-800">
             Lift4M Workspace — 10-Stage Project Timeline
           </h2>
